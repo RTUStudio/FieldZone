@@ -4,7 +4,6 @@ import kr.rtustudio.fieldzone.bukkit.FieldZone;
 import kr.rtustudio.fieldzone.bukkit.configuration.GlobalConfig;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
-import kr.rtustudio.framework.bukkit.api.configuration.internal.translation.message.MessageTranslation;
 import kr.rtustudio.framework.bukkit.api.registry.CustomItems;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

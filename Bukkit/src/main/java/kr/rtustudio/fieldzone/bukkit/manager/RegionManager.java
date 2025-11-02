@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import kr.rtustudio.fieldzone.bukkit.FieldZone;
-import kr.rtustudio.fieldzone.bukkit.mapfrontiers.MapFrontiersBridge;
 import kr.rtustudio.fieldzone.common.data.Point;
 import kr.rtustudio.fieldzone.common.data.PolygonPos;
 import kr.rtustudio.fieldzone.common.region.Region;
@@ -161,7 +160,7 @@ public class RegionManager {
                 map.put(region.name(), region);
                 addCache(region);
                 // MapFrontiers에 생성 브로드캐스트
-                MapFrontiersBridge.broadcastRegionCreated(plugin, region);
+                plugin.getMapFrontiersBridge().broadcastRegionCreated(region);
                 return true;
             }
             return false;
@@ -195,7 +194,7 @@ public class RegionManager {
         map.remove(regionName);
         removeCache(region);
         // MapFrontiers에 삭제 브로드캐스트
-        MapFrontiersBridge.broadcastRegionDeleted(plugin, region);
+        plugin.getMapFrontiersBridge().broadcastRegionDeleted(region);
         return true;
     }
 

@@ -4,7 +4,6 @@ import kr.rtustudio.configurate.objectmapping.ConfigSerializable;
 import kr.rtustudio.configurate.objectmapping.meta.Comment;
 import kr.rtustudio.framework.bukkit.api.configuration.ConfigurationPart;
 import lombok.Getter;
-import org.bukkit.Particle;
 
 @Getter
 @ConfigSerializable
@@ -53,6 +52,7 @@ public class GlobalConfig extends ConfigurationPart {
             private final org.bukkit.Particle pillarType = org.bukkit.Particle.FIREWORK;
         }
     }
+
     @Getter
     @ConfigSerializable
     public static class Warning {

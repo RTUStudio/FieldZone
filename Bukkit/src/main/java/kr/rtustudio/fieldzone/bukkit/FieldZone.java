@@ -26,6 +26,8 @@ public class FieldZone extends RSPlugin {
     private RegionManager regionManager;
     @Getter
     private WandManager wandManager;
+    @Getter
+    private MapFrontiersBridge mapFrontiersBridge;
 
     public FieldZone() {
         super("ko_kr");
@@ -57,13 +59,15 @@ public class FieldZone extends RSPlugin {
 
         registerIntegration(new PlaceholderAPI(this));
 
-        // MapFrontiers Plugin Messaging 채널 등록 (Bukkit -> Fabric 클라이언트 송신)
-        MapFrontiersBridge.register(this);
+        mapFrontiersBridge = new MapFrontiersBridge(this);
     }
 
     @Override
     public void disable() {
-        // 등록한 채널 해제
-        MapFrontiersBridge.unregister(this);
+        // 브리지 정리 및 채널 해제
+        if (mapFrontiersBridge != null) {
+            mapFrontiersBridge.close();
+            mapFrontiersBridge = null;
+        }
     }
 }

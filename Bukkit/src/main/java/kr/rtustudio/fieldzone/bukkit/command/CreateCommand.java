@@ -8,7 +8,6 @@ import kr.rtustudio.fieldzone.common.data.WandPos;
 import kr.rtustudio.fieldzone.common.region.Region;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
-import kr.rtustudio.framework.bukkit.api.configuration.internal.translation.message.MessageTranslation;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 

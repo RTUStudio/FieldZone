@@ -6,7 +6,6 @@ import kr.rtustudio.fieldzone.common.data.Point;
 import kr.rtustudio.fieldzone.common.region.Region;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
-import kr.rtustudio.framework.bukkit.api.configuration.internal.translation.message.MessageTranslation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
