@@ -1,0 +1,54 @@
+fieldzone:
+  name: "지역"
+  description: "지역 메인 명령어"
+  usage: "/지역"
+  commands:
+    wand:
+      name: "도구"
+      description: "지역 선택 도구를 받습니다"
+      usage: "/지역 도구"
+    create:
+      name: "생성"
+      description: "선택한 점들로 지역을 생성합니다"
+      usage: "/지역 생성 <이름>"
+    remove:
+      name: "제거"
+      description: "지역을 제거합니다"
+      usage: "/지역 제거 <지역>"
+    teleport:
+      name: "이동"
+      description: "지역의 중심으로 이동합니다"
+      usage: "/지역 이동 <지역>"
+    list:
+      name: "목록"
+      description: "모든 지역 목록을 확인합니다"
+      usage: "/지역 목록"
+    info:
+      name: "정보"
+      description: "지역의 상세 정보를 확인합니다"
+      usage: "/지역 정보 <지역>"
+    clear:
+      name: "초기화"
+      description: "선택한 모든 점을 초기화합니다"
+      usage: "/지역 초기화"
+    particle:
+      name: "파티클"
+      description: "파티클 표시를 켜거나 끕니다"
+      usage: "/지역 파티클"
+    flag:
+      name: "플래그"
+      description: "지역 플래그를 관리합니다"
+      usage: "/지역 플래그"
+      commands:
+        add:
+          name: "추가"
+          description: "지역에 플래그를 추가합니다"
+          usage: "/지역 플래그 추가 <지역> <플래그>"
+        remove:
+          name: "제거"
+          description: "지역에서 플래그를 제거합니다"
+          usage: "/지역 플래그 제거 <지역> <플래그>"
+        list:
+          name: "목록"
+          description: "지역의 플래그 목록을 확인합니다"
+          usage: "/지역 플래그 목록 <지역>"
