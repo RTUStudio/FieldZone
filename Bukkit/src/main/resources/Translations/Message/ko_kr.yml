@@ -9,6 +9,7 @@ wand:
     toggle: "<white>선택 모드가 <white>{mode}</white>(으)로 전환되었습니다.</white>"
     free: "<green>자유</green>"
     square: "<yellow>사각형</yellow>"
+    raycast: "<aqua>레이캐스트</aqua>"
   square:
     first: "<white>첫 번째 지점을 선택했습니다.</white> <red>{x}</red><gray>,</gray> <aqua>{z}</aqua>"
     second: "<white>두 번째 지점을 선택했습니다.</white> <red>{x}</red><gray>,</gray> <aqua>{z}</aqua>"

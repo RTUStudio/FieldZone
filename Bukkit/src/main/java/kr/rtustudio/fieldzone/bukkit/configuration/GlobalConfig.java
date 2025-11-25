@@ -1,81 +1,81 @@
 package kr.rtustudio.fieldzone.bukkit.configuration;
 
-import kr.rtustudio.configurate.objectmapping.ConfigSerializable;
 import kr.rtustudio.configurate.objectmapping.meta.Comment;
 import kr.rtustudio.framework.bukkit.api.configuration.ConfigurationPart;
 import lombok.Getter;
 
 @Getter
-@ConfigSerializable
+@SuppressWarnings({"unused", "CanBeFinal", "FieldCanBeLocal", "FieldMayBeFinal", "InnerClassMayBeStatic"})
 public class GlobalConfig extends ConfigurationPart {
 
     @Comment("PlaceholderAPI - 지역이 없을 때 표시할 텍스트")
-    private final String noRegionText = "빈 공간";
+    private String noRegionText = "빈 공간";
 
     @Comment("Wand 설정")
-    private final Wand wand = new Wand();
+    private Wand wand;
 
     @Comment("경고 시스템 설정")
-    private final Warning warning = new Warning();
+    private Warning warning;
 
     @Getter
-    @ConfigSerializable
-    public static class Wand {
+    public class Wand extends ConfigurationPart {
         @Comment("아이템 ID (CustomItems 형식)")
-        private final String item = "minecraft:blaze_rod";
+        private String item = "minecraft:blaze_rod";
 
         @Comment("파티클 설정")
-        private final Particle particle = new Particle();
+        private Particle particle;
+
+        @Comment("레이캐스트 최대 거리")
+        private int raycastMaxRange = 200;
 
         @Getter
-        @ConfigSerializable
-        public static class Particle {
+        public class Particle extends ConfigurationPart {
+            @Comment("파도 파티클")
+            public Wave wave;
             @Comment("표시 간격 (틱, 낮을수록 부드러움). 권장: 1-5")
-            private final int interval = 2;
-
+            private int interval = 2;
             @Comment("밀도 (블록당 간격, 낮을수록 촘촘함, 권장: 0.05-0.3)")
-            private final double density = 0.05;
-
+            private double density = 0.05;
             @Comment("파도 간격 (블록 단위, 수평 밴드 간격)")
-            private final int waveGap = 10;
-
+            private int waveGap = 10;
             @Comment("파도 상승 단계 (틱마다 증가하는 높이, 블록 단위, 예: 0.1)")
-            private final double wavePhaseStep = 0.1;
-
+            private double wavePhaseStep = 0.1;
             @Comment("플레이어 Y 기준 수직 표시 범위(±블록)")
-            private final int verticalRange = 64;
+            private int verticalRange = 64;
+            @Comment("기둥 파티클")
+            private org.bukkit.Particle pillar = org.bukkit.Particle.FIREWORK;
 
-            @Comment("파도 파티클 타입")
-            private final org.bukkit.Particle waveType = org.bukkit.Particle.HAPPY_VILLAGER;
-
-            @Comment("기둥 파티클 타입")
-            private final org.bukkit.Particle pillarType = org.bukkit.Particle.FIREWORK;
+            @Getter
+            public class Wave extends ConfigurationPart {
+                @Comment("기본")
+                private org.bukkit.Particle normal = org.bukkit.Particle.HAPPY_VILLAGER;
+                @Comment("교차")
+                private org.bukkit.Particle intersect = org.bukkit.Particle.WAX_ON;
+            }
         }
     }
 
     @Getter
-    @ConfigSerializable
-    public static class Warning {
+    public class Warning extends ConfigurationPart {
         @Comment("감지 거리 (블록, 플레이어가 경계에서 이 거리 내에 있을 때 파티클 표시)")
-        private final double distance = 2.75;
+        private double distance = 2.75;
         @Comment("파티클 설정")
-        private final Particle particle = new Particle();
+        private Particle particle;
 
         public double getDistanceSquared() {
             return distance * distance;
         }
 
         @Getter
-        @ConfigSerializable
-        public static class Particle {
+        public class Particle extends ConfigurationPart {
             @Comment("타입 (예: OMINOUS_SPAWNING, FLAME, REDSTONE, SOUL_FIRE_FLAME 등)")
-            private final org.bukkit.Particle type = org.bukkit.Particle.OMINOUS_SPAWNING;
+            private org.bukkit.Particle type = org.bukkit.Particle.OMINOUS_SPAWNING;
 
             @Comment("쿨다운 (틱, 같은 위치에 파티클이 다시 표시되기까지의 시간)")
-            private final int cooldown = 29;
+            private int cooldown = 29;
 
             @Comment("샘플링 간격 (블록, 낮을수록 촘촘함, 권장: 0.15-0.5)")
-            private final double interval = 0.25;
+            private double interval = 0.25;
         }
     }
 

@@ -31,6 +31,7 @@ public class WandInteract extends RSListener<FieldZone> {
 
     private final List<Action> actions = List.of(
             Action.LEFT_CLICK_BLOCK,
+            Action.LEFT_CLICK_AIR,
             Action.RIGHT_CLICK_BLOCK,
             Action.RIGHT_CLICK_AIR
     );
@@ -73,36 +74,57 @@ public class WandInteract extends RSListener<FieldZone> {
         if (e.getHand() != EquipmentSlot.HAND) return;
         ItemStack mainHand = player.getInventory().getItemInMainHand();
         String id = CustomItems.to(mainHand);
-        if (id.equalsIgnoreCase(config.getWand().getItem())) {
-            if (!check(player, mainHand)) return;
+        if (!id.equalsIgnoreCase(config.getWand().getItem())) return;
+        if (!check(player, mainHand)) return;
 
-            WandMode mode = manager.getMode(player.getUniqueId());
-            if (mode == WandMode.SQUARE) {
-                Block block = e.getClickedBlock();
-                if (block == null) return;
-                if (action == Action.LEFT_CLICK_BLOCK) {
-                    manager.addSquareFirst(player, block.getLocation());
-                    WandPos pos = manager.get(player.getUniqueId());
-                    int count = pos != null ? pos.positions().size() : 0;
-                    String msg = replace(message().get(player, "wand.square.first"), block.getLocation(), count);
-                    chat().announce(player, msg);
-                } else if (action == Action.RIGHT_CLICK_BLOCK) {
-                    manager.addSquareSecond(player, block.getLocation());
-                    WandPos pos = manager.get(player.getUniqueId());
-                    int count = pos != null ? pos.positions().size() : 0;
-                    String msg = replace(message().get(player, "wand.square.second"), block.getLocation(), count);
-                    chat().announce(player, msg);
-                }
-            } else { // FREE 모드
-                if (action == Action.LEFT_CLICK_BLOCK) {
-                    Block block = e.getClickedBlock();
-                    if (block == null) return;
-                    addPosition(player, block.getLocation());
-                } else if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
-                    removePosition(player);
-                }
+        WandMode mode = manager.getMode(player.getUniqueId());
+        switch (mode) {
+            case SQUARE -> handleSquareMode(player, e, action);
+            case RAYCAST -> handleRaycastMode(player, e, action);
+            case FREE -> handleFreeMode(player, e, action);
+        }
+        e.setCancelled(true);
+    }
+
+    private void handleSquareMode(Player player, PlayerInteractEvent e, Action action) {
+        Block block = e.getClickedBlock();
+        if (block == null) return;
+        if (action == Action.LEFT_CLICK_BLOCK) {
+            manager.addSquareFirst(player, block.getLocation());
+            WandPos pos = manager.get(player.getUniqueId());
+            int count = pos != null ? pos.positions().size() : 0;
+            String msg = replace(message().get(player, "wand.square.first"), block.getLocation(), count);
+            chat().announce(player, msg);
+        } else if (action == Action.RIGHT_CLICK_BLOCK) {
+            manager.addSquareSecond(player, block.getLocation());
+            WandPos pos = manager.get(player.getUniqueId());
+            int count = pos != null ? pos.positions().size() : 0;
+            String msg = replace(message().get(player, "wand.square.second"), block.getLocation(), count);
+            chat().announce(player, msg);
+        }
+    }
+
+    private void handleRaycastMode(Player player, PlayerInteractEvent e, Action action) {
+        if (action == Action.LEFT_CLICK_BLOCK || action == Action.LEFT_CLICK_AIR) {
+            Block block = e.getClickedBlock();
+            if (block == null) {
+                block = player.getTargetBlockExact(config.getWand().getRaycastMaxRange()); // 최대 200블록까지
             }
-            e.setCancelled(true);
+            if (block != null) {
+                addPosition(player, block.getLocation());
+            }
+        } else if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
+            removePosition(player);
+        }
+    }
+
+    private void handleFreeMode(Player player, PlayerInteractEvent e, Action action) {
+        if (action == Action.LEFT_CLICK_BLOCK) {
+            Block block = e.getClickedBlock();
+            if (block == null) return;
+            addPosition(player, block.getLocation());
+        } else if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
+            removePosition(player);
         }
     }
 

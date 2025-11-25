@@ -45,7 +45,12 @@ public class WandManager {
     }
 
     public WandMode toggleMode(UUID uuid) {
-        WandMode next = getMode(uuid) == WandMode.FREE ? WandMode.SQUARE : WandMode.FREE;
+        WandMode current = getMode(uuid);
+        WandMode next = switch (current) {
+            case FREE -> WandMode.SQUARE;
+            case SQUARE -> WandMode.RAYCAST;
+            case RAYCAST -> WandMode.FREE;
+        };
         modes.put(uuid, next);
         squareFirst.remove(uuid);
         squareSecond.remove(uuid);
@@ -96,7 +101,6 @@ public class WandManager {
         String world = location.getWorld().getName();
         WandPos wandPos = map.getOrDefault(uuid, new WandPos(world));
 
-        // 월드가 다르면 초기화
         if (!wandPos.world().equals(world)) {
             wandPos = new WandPos(world);
         }
@@ -105,7 +109,6 @@ public class WandManager {
 
         if (wandPos.positions().size() >= 2 && willIntersect(wandPos.positions(), newPos)) {
             chat.announce(player, message.get(player, "wand.intersect"));
-            return;
         }
 
         WandPos newWandPos = wandPos.addPosition(newPos);
@@ -202,56 +205,24 @@ public class WandManager {
         GlobalConfig.Wand.Particle particleConfig = this.config.getWand().getParticle();
         double density = particleConfig.getDensity();
         int interval = particleConfig.getInterval();
-
         stopParticle(uuid);
 
-        // 사전 계산: 지형에 스냅된 컬럼(x,z, surfaceY) 목록 생성 (모서리당 최대 40 컬럼)
         World world = player.getWorld();
         int worldMinY = world.getMinHeight();
         int worldMaxY = world.getMaxHeight();
 
-        // 제한 해제: 에지당 컬럼 제한, 높이 캡 등 제거
         final int waveGap = particleConfig.getWaveGap();
         final double wavePhaseStep = particleConfig.getWavePhaseStep();
 
-        List<Column> columns = new ArrayList<>();
-        if (positions.size() >= 2) {
-            Set<Long> used = new HashSet<>(); // 중복 (x,z) 방지 (1/16 블록 정밀도 키)
-            for (int i = 0; i < positions.size(); i++) {
-                BlockPos a = positions.get(i);
-                BlockPos b = positions.get((i + 1) % positions.size());
-                if (i == positions.size() - 1 && positions.size() < 3) break; // 마지막 선은 2점 미만일 때 스킵
-
-                double dx = b.x() - a.x();
-                double dz = b.z() - a.z();
-                double dist = Math.sqrt(dx * dx + dz * dz);
-                if (dist < 1e-6) continue;
-
-                // 수평 간격: 밀도 완화(간격 하한을 높여 과도한 촘촘함 방지)
-                double sampleInterval = Math.max(0.5, density); // 최소 0.5 블록 간격
-                int stepsByInterval = (int) Math.ceil(dist / sampleInterval);
-                int stepsByBlock = (int) Math.ceil(dist);
-                int steps = Math.max(stepsByInterval, stepsByBlock);
-                int cappedSteps = steps; // 제한 제거
-
-                for (int iStep = 0; iStep <= cappedSteps; iStep++) {
-                    double t = (double) iStep / Math.max(1, cappedSteps);
-                    double x = a.x() + dx * t;
-                    double z = a.z() + dz * t;
-                    long qx = Math.round((x + 0.5) * 32.0); // 센터 기준 양자화(더 고운 1/32 블록)
-                    long qz = Math.round((z + 0.5) * 32.0);
-                    long key = (qx << 32) ^ (qz & 0xffffffffL);
-                    if (!used.add(key)) continue;
-
-                    columns.add(new Column(x, z));
-                }
-            }
-        }
+        Columns columnsData = buildColumns(positions, density);
+        final List<Column> columns = columnsData.regular();
+        final List<Column> intersectColumns = columnsData.intersect();
 
         // 파도 애니메이션 위상 (수직 진행: 높이 기준)
         final double[] phaseY = new double[]{0.0};
-        final Particle waveType = particleConfig.getWaveType();
-        final Particle pillarType = particleConfig.getPillarType();
+        final Particle waveType = particleConfig.getWave().getNormal();
+        final Particle pillarType = particleConfig.getPillar();
+        final Particle intersectWaveType = particleConfig.getWave().getIntersect();
 
         ScheduledTask task = CraftScheduler.repeat(plugin, scheduledTask -> {
             if (!isParticleEnabled(uuid)) {
@@ -275,74 +246,45 @@ public class WandManager {
             int posCount = currentPositions.size();
             World worldNow = p.getWorld();
             if (!worldNow.getUID().equals(world.getUID())) {
-                // 월드가 바뀌면 중단 (다시 설정 시 재생성됨)
                 scheduledTask.cancel();
                 return;
             }
-            int minY = worldMinY;
-            int maxY = worldMaxY;
-
-            // 플레이어 기반 컬링 파라미터
             Location ploc = p.getLocation();
             double px = ploc.getX();
             double py = ploc.getY();
             double pz = ploc.getZ();
-            int viewChunks = plugin.getServer().getViewDistance();
-            double viewBlocks = Math.max(8, viewChunks * 16); // 안전 하한 8블록
-            double viewBlocks2 = viewBlocks * viewBlocks; // 제곱 거리 비교용
+            double horizontalLimitSq = particleRangeSquared(p);
             double yMaxDelta = particleConfig.getVerticalRange();
 
-            // 재사용 가능한 Location 인스턴스(할당 감소)
             Location tmp = new Location(world, 0, 0, 0);
 
             if (posCount == 1) {
-                // 단일 점: 기둥 표시 (컬링 적용)
                 BlockPos pos = currentPositions.get(0);
                 double x = pos.x() + 0.5;
                 double z = pos.z() + 0.5;
-                if (inHorizontalRange(px, pz, x, z, viewBlocks2)) {
-                    double yStart0 = Math.max(minY, py - yMaxDelta);
-                    double yEnd0 = Math.min(maxY, py + yMaxDelta);
+                if (inHorizontalRange(px, pz, x, z, horizontalLimitSq)) {
+                    double yStart0 = Math.max(worldMinY, py - yMaxDelta);
+                    double yEnd0 = Math.min(worldMaxY, py + yMaxDelta);
                     spawnPillar(p, tmp, x, z, yStart0, yEnd0, pillarType);
                 }
             } else {
-                // 파도 애니메이션: 수평 밴드(가로선)들이 위로 이동
                 phaseY[0] = (phaseY[0] + wavePhaseStep) % Math.max(0.0001, waveGap);
-
-                // 전역 수평 밴드: 월드 전체 높이 범위 사용 (제한 해제)
-                double minLower = minY;
-                double maxUpper = maxY;
-
-                // 수직 컬링 범위 계산 (플레이어 기준 ±range 윈도우)
-                double yStart = Math.max(minLower, py - yMaxDelta);
-                double yEnd = Math.min(maxUpper, py + yMaxDelta);
-
-                // 밴드 기준을 '월드 최소 높이'에 고정하고, 윈도우에 맞춰 첫 밴드를 찾음
-                double phase = (phaseY[0] % waveGap + waveGap) % waveGap; // [0, waveGap)
-                double y0 = minLower + phase; // 월드 고정 기준
+                double yStart = Math.max(worldMinY, py - yMaxDelta);
+                double yEnd = Math.min(worldMaxY, py + yMaxDelta);
+                double phase = (phaseY[0] % waveGap + waveGap) % waveGap;
+                double y0 = worldMinY + phase;
                 if (y0 < yStart) {
                     double k = Math.ceil((yStart - y0) / waveGap);
                     y0 += k * waveGap;
                 }
-                for (double y = y0; y <= yEnd; y += waveGap) {
-                    for (Column c : columns) {
-                        double cx = c.x() + 0.5;
-                        double cz = c.z() + 0.5;
-                        if (!inHorizontalRange(px, pz, cx, cz, viewBlocks2)) continue;
-                        tmp.setX(cx);
-                        tmp.setY(y);
-                        tmp.setZ(cz);
-                        p.spawnParticle(waveType, tmp, 1, 0, 0, 0, 0);
-                    }
-                }
-
-                // 꼭지점 강조: 전체 기둥 (월드 전체 높이 사용)
+                renderWaveBands(columns, waveType, p, tmp, px, pz, horizontalLimitSq, y0, yEnd, waveGap);
+                renderWaveBands(intersectColumns, intersectWaveType, p, tmp, px, pz, horizontalLimitSq, y0, yEnd, waveGap);
                 for (BlockPos pos : currentPositions) {
                     double x = pos.x() + 0.5;
                     double z = pos.z() + 0.5;
-                    if (!inHorizontalRange(px, pz, x, z, viewBlocks2)) continue;
-                    double yStart2 = Math.max(minY, py - yMaxDelta);
-                    double yEnd2 = Math.min(maxY, py + yMaxDelta);
+                    if (!inHorizontalRange(px, pz, x, z, horizontalLimitSq)) continue;
+                    double yStart2 = Math.max(worldMinY, py - yMaxDelta);
+                    double yEnd2 = Math.min(worldMaxY, py + yMaxDelta);
                     spawnPillar(p, tmp, x, z, yStart2, yEnd2, pillarType);
                 }
             }
@@ -351,50 +293,112 @@ public class WandManager {
         particleTasks.put(uuid, task);
     }
 
+    private Columns buildColumns(List<BlockPos> positions, double density) {
+        if (positions.size() < 2) return new Columns(Collections.emptyList(), Collections.emptyList());
+
+        Set<Integer> intersectingEdges = findIntersectingEdges(positions);
+        List<Column> columns = new ArrayList<>();
+        List<Column> intersectColumns = new ArrayList<>();
+        Set<Long> used = new HashSet<>();
+
+        for (int i = 0; i < positions.size(); i++) {
+            BlockPos a = positions.get(i);
+            BlockPos b = positions.get((i + 1) % positions.size());
+            if (i == positions.size() - 1 && positions.size() < 3) break;
+
+            double dx = b.x() - a.x();
+            double dz = b.z() - a.z();
+            double dist = Math.sqrt(dx * dx + dz * dz);
+            if (dist < 1e-6) continue;
+
+            boolean isIntersecting = intersectingEdges.contains(i);
+            double sampleInterval = Math.max(0.5, density);
+            int stepsByInterval = (int) Math.ceil(dist / sampleInterval);
+            int stepsByBlock = (int) Math.ceil(dist);
+            int steps = Math.max(stepsByInterval, stepsByBlock);
+
+            for (int iStep = 0; iStep <= steps; iStep++) {
+                double t = (double) iStep / Math.max(1, steps);
+                double x = a.x() + dx * t;
+                double z = a.z() + dz * t;
+                long qx = Math.round((x + 0.5) * 32.0);
+                long qz = Math.round((z + 0.5) * 32.0);
+                long key = (qx << 32) ^ (qz & 0xffffffffL);
+                if (!used.add(key)) continue;
+
+                if (isIntersecting) intersectColumns.add(new Column(x, z));
+                else columns.add(new Column(x, z));
+            }
+        }
+
+        return new Columns(columns, intersectColumns);
+    }
+
+    private Set<Integer> findIntersectingEdges(List<BlockPos> positions) {
+        Set<Integer> intersecting = new HashSet<>();
+        if (positions.size() < 3) return intersecting;
+
+        int n = positions.size();
+
+        for (int i = 0; i < n; i++) {
+            BlockPos a1 = positions.get(i);
+            BlockPos a2 = positions.get((i + 1) % n);
+
+            if (i == n - 1 && n < 3) continue;
+
+            for (int j = i + 2; j < n; j++) {
+                if (j == (i + 1) % n || i == (j + 1) % n) continue;
+
+                BlockPos b1 = positions.get(j);
+                BlockPos b2 = positions.get((j + 1) % n);
+
+                if (j == n - 1 && n < 3) continue;
+
+                if (linesIntersect(a1, a2, b1, b2)) {
+                    intersecting.add(i);
+                    intersecting.add(j);
+                }
+            }
+        }
+
+        return intersecting;
+    }
+
     private boolean willIntersect(List<BlockPos> positions, BlockPos newPos) {
         if (positions.size() < 2) return false;
 
         BlockPos lastPos = positions.get(positions.size() - 1);
 
-        // 1. 새로운 선분(마지막 점 -> 새 점)과 기존 선분들의 교차 검사
         for (int i = 0; i < positions.size() - 1; i++) {
             BlockPos p1 = positions.get(i);
             BlockPos p2 = positions.get(i + 1);
 
-            // 인접 선분(새 선분과 끝점 공유)인 경우 스킵
             if (p1.equals(lastPos) || p2.equals(lastPos)) continue;
 
             if (linesIntersect(p1, p2, lastPos, newPos)) {
                 return true;
             }
 
-            // 동일선상/중첩: 새 점이 기존 비인접 선분 위에 놓이는 경우 차단
             if (onSegment(p1, p2, newPos)) {
                 return true;
             }
 
-            // 동일선상/중첩: 기존 선분의 끝점이 새 선분 위에 놓이는 경우 차단 (공유 끝점 제외)
             if ((!p1.equals(lastPos) && onSegment(lastPos, newPos, p1)) || (!p2.equals(lastPos) && onSegment(lastPos, newPos, p2))) {
                 return true;
             }
 
-            // 거의 평행하며 매우 근접하게 겹치는 경우(슬리버/면적0) 차단
             if (nearParallelOverlap(lastPos, newPos, p1, p2)) {
                 return true;
             }
         }
 
-        // 2. 폴리곤이 3개 이상의 점을 가질 때, 닫는 선분(새 점 -> 첫 점)과의 교차 검사
         if (positions.size() >= 3) {
             BlockPos firstPos = positions.get(0);
 
-            // 닫는 선분(새 점 -> 첫 점)과 중간 선분들의 교차 검사
-            // 첫 번째와 마지막 선분은 제외 (인접한 선분이므로)
             for (int i = 1; i < positions.size() - 1; i++) {
                 BlockPos p1 = positions.get(i);
                 BlockPos p2 = positions.get(i + 1);
 
-                // 인접 선분(닫힘 선분과 firstPos 공유) 스킵
                 if (p1.equals(firstPos) || p2.equals(firstPos)) continue;
 
                 if (linesIntersect(p1, p2, newPos, firstPos)) {
@@ -440,6 +444,29 @@ public class WandManager {
             tmp.setZ(z);
             p.spawnParticle(type, tmp, 1, 0, 0, 0, 0);
         }
+    }
+
+    private void renderWaveBands(List<Column> columns, Particle type, Player player, Location tmp,
+                                 double px, double pz, double horizontalLimitSq,
+                                 double yStart, double yEnd, double waveGap) {
+        if (columns.isEmpty()) return;
+        for (double y = yStart; y <= yEnd; y += waveGap) {
+            for (Column column : columns) {
+                double cx = column.x() + 0.5;
+                double cz = column.z() + 0.5;
+                if (!inHorizontalRange(px, pz, cx, cz, horizontalLimitSq)) continue;
+                tmp.setX(cx);
+                tmp.setY(y);
+                tmp.setZ(cz);
+                player.spawnParticle(type, tmp, 1, 0, 0, 0, 0);
+            }
+        }
+    }
+
+    private double particleRangeSquared(Player player) {
+        int viewChunks = plugin.getServer().getViewDistance();
+        double viewBlocks = Math.max(8, viewChunks * 16);
+        return viewBlocks * viewBlocks;
     }
 
     private boolean onSegment(BlockPos a, BlockPos b, BlockPos p) {
@@ -500,6 +527,9 @@ public class WandManager {
     }
 
     private record Column(double x, double z) {
+    }
+
+    private record Columns(List<Column> regular, List<Column> intersect) {
     }
 
 }
