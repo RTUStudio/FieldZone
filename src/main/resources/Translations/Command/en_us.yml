@@ -1,0 +1,54 @@
+fieldzone:
+  name: "region"
+  description: "Main region command"
+  usage: "/region"
+  commands:
+    wand:
+      name: "wand"
+      description: "Receive the selection wand"
+      usage: "/region wand"
+    create:
+      name: "create"
+      description: "Create a region with the selected points"
+      usage: "/region create <name>"
+    remove:
+      name: "remove"
+      description: "Delete a region"
+      usage: "/region remove <region>"
+    teleport:
+      name: "teleport"
+      description: "Teleport to the center of a region"
+      usage: "/region teleport <region>"
+    list:
+      name: "list"
+      description: "List all regions"
+      usage: "/region list"
+    info:
+      name: "info"
+      description: "Show region details"
+      usage: "/region info <region>"
+    clear:
+      name: "clear"
+      description: "Clear all selected points"
+      usage: "/region clear"
+    particle:
+      name: "particle"
+      description: "Toggle particle preview"
+      usage: "/region particle"
+    flag:
+      name: "flag"
+      description: "Manage region flags"
+      usage: "/region flag"
+      commands:
+        add:
+          name: "add"
+          description: "Add a flag to a region"
+          usage: "/region flag add <region> <flag>"
+        remove:
+          name: "remove"
+          description: "Remove a flag from a region"
+          usage: "/region flag remove <region> <flag>"
+        list:
+          name: "list"
+          description: "List flags of a region"
+          usage: "/region flag list <region>"

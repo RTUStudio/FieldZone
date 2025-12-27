@@ -1,0 +1,48 @@
+wand:
+  give: "<green>You received the wand.</green>"
+  add: "<white>Point added: <red>{x}</red><gray>,</gray> <aqua>{z}</aqua> (<gray>{count}</gray>)</white>"
+  remove: "<white>Removed the last point. (<gray>{count}</gray>)</white>"
+  clear: "<white>Cleared all selected points.</white>"
+  invalid-item: "<red>Invalid wand item configuration.</red>"
+  intersect: "<red>Lines intersect! Please pick another location.</red>"
+  mode:
+    toggle: "<white>Selection mode switched to <white>{mode}</white>.</white>"
+    free: "<green>Free</green>"
+    square: "<yellow>Square</yellow>"
+    raycast: "<aqua>Raycast</aqua>"
+  square:
+    first: "<white>Selected the first corner.</white> <red>{x}</red><gray>,</gray> <aqua>{z}</aqua>"
+    second: "<white>Selected the second corner.</white> <red>{x}</red><gray>,</gray> <aqua>{z}</aqua>"
+region:
+  create: "<green>Created region '<white>{region}</white>' (points: <white>{points}</white>, area: <white>{area}</white>㎡).</green>"
+  remove: "<white>Removed region '<white>{region}</white>'.</white>"
+  exists: "<red>The region name already exists.</red>"
+  not-found: "<red>Region not found.</red>"
+  world-not-found: "<red>World not found.</red>"
+  teleport: "<green>Teleported to region '<white>{region}</white>'.</green>"
+  zero-area: "<red>Region area is 0. Cannot create a line/point-shaped region where x or z is identical.</red>"
+  list:
+    empty: "<white>No regions registered.</white>"
+    header: "<gradient:#FFD700:#FFA500>===== Region List (<white>{count}</white>) =====</gradient>"
+    item: " <gray>▪</gray> <white>{name}</white> <gray>-</gray> <white>{world}</white> <gray>(points: <white>{points}</white>, area: <white>{area}</white>㎡)</gray>"
+  info:
+    header: "<gradient:#FFD700:#FFA500>===== Region Info: <white>{region}</white> =====</gradient>"
+    world: " <gray>▪</gray> <white>World:</white> <white>{world}</white>"
+    server: " <gray>▪</gray> <white>Server:</white> <white>{server}</white>"
+    points: " <gray>▪</gray> <white>Points:</white> <white>{points}</white>"
+    area: " <gray>▪</gray> <white>Area:</white> <white>{area}</white>㎡"
+    perimeter: " <gray>▪</gray> <white>Perimeter:</white> <white>{perimeter}</white> blocks"
+    center: " <gray>▪</gray> <white>Center:</white> <white>({x}, {z})</white>"
+    flags: " <gray>▪</gray> <white>Flags:</white> <white>{flags}</white>"
+  flag:
+    add: "<green>Added flag '<white>{flag}</white>' to region '<white>{region}</white>'.</green>"
+    remove: "<white>Removed flag '<white>{flag}</white>' from region '<white>{region}</white>'.</white>"
+    unknown: "<red>Unknown flag: {flag}</red>"
+    list:
+      empty: "<white>No flags set for region '<white>{region}</white>'.</white>"
+      header: "<gradient:#FFD700:#FFA500>===== Region Flags: <white>{region}</white> =====</gradient>"
+      item: " <gray>▪</gray> <white>{name}</white> <gray>({key})</gray>"
+particle:
+  toggle: "<white>Particle display: {status}</white>"
+  on: "<green>On</green>"
+  off: "<red>Off</red>"
