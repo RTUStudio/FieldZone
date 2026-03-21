@@ -12,6 +12,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.util.UUID;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
 @SuppressWarnings("unused")
@@ -30,7 +32,7 @@ public class PlayerJoinQuit extends RSListener<FieldZone> {
         String worldName = player.getWorld().getName();
         int delay = mfConfig.getJoinSyncDelayTicks();
 
-        Runnable task = () -> sendAllRegionsForWorld(player.getUniqueId(), worldName);
+        Runnable task = () -> sendRegions(player.getUniqueId(), worldName);
         if (delay <= 0) task.run();
         else CraftScheduler.delay(getPlugin(), task, delay);
     }
@@ -50,12 +52,12 @@ public class PlayerJoinQuit extends RSListener<FieldZone> {
         sendRegion(e.getPlayer());
     }
 
-    private void sendAllRegionsForWorld(java.util.UUID playerId, String worldName) {
+    private void sendRegions(UUID playerId, String worldName) {
         var player = Bukkit.getPlayer(playerId);
         if (player == null || !player.isOnline()) return;
-        for (Region region : getPlugin().getRegionManager().getRegions()) {
+        for (Region region : plugin.getRegionManager().getRegions()) {
             if (region.pos().world().equalsIgnoreCase(worldName)) {
-                getPlugin().getMapFrontiersBridge().sendRegionCreatedToPlayer(player, region);
+                plugin.getMapFrontiersBridge().sendRegionCreatedToPlayer(player, region);
             }
         }
     }

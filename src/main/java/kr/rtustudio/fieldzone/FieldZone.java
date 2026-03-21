@@ -6,7 +6,7 @@ import kr.rtustudio.fieldzone.command.MainCommand;
 import kr.rtustudio.fieldzone.configuration.FlagConfig;
 import kr.rtustudio.fieldzone.configuration.GlobalConfig;
 import kr.rtustudio.fieldzone.configuration.MapFrontiersConfig;
-import kr.rtustudio.fieldzone.dependency.PlaceholderAPI;
+import kr.rtustudio.fieldzone.integration.PlaceholderAPI;
 import kr.rtustudio.fieldzone.handler.PlayerJoinQuit;
 import kr.rtustudio.fieldzone.handler.RegionWarning;
 import kr.rtustudio.fieldzone.handler.WandInteract;

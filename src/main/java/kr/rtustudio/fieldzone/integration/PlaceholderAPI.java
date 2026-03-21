@@ -1,4 +1,4 @@
-package kr.rtustudio.fieldzone.dependency;
+package kr.rtustudio.fieldzone.integration;
 
 import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.manager.RegionManager;
