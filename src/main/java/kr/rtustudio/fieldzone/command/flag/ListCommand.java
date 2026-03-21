@@ -5,7 +5,7 @@ import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.fieldzone.region.RegionFlag;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -21,34 +21,33 @@ public class ListCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected Result execute(RSCommandData data) {
+    protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
 
         if (data.length() < 3) return Result.WRONG_USAGE;
 
-        String regionName = data.args(2);
+        String regionName = data.get(2);
         Region region = manager.get(regionName);
         if (region == null) {
-            chat().announce(message().get(player, "region.not-found"));
+            notifier.announce(message.get(player, "region.not-found"));
             return Result.FAILURE;
         }
 
         if (region.flags().isEmpty()) {
-            chat().announce(message().get(player, "region.flag.list.empty").replace("{region}", regionName));
-        } else {
-            chat().announce(message().get(player, "region.flag.list.header").replace("{region}", regionName));
-            for (RegionFlag flag : region.flags()) {
-                chat().announce(message().get(player, "region.flag.list.item")
-                        .replace("{name}", message().get(player, "region.flag." + flag.getKey()))
-                        .replace("{key}", flag.getKey()));
-            }
+            notifier.announce(message.get(player, "region.flag.empty"));
+            return Result.SUCCESS;
+        }
+
+        notifier.announce(message.get(player, "region.flag.list.header").replace("{region}", regionName));
+        for (RegionFlag flag : region.flags()) {
+            notifier.announce(message.get(player, "region.flag.list.item").replace("{flag}", flag.getKey()));
         }
         return Result.SUCCESS;
     }
 
     @Override
-    protected List<String> tabComplete(RSCommandData data) {
+    protected List<String> tabComplete(CommandArgs data) {
         if (data.length() == 3) {
             return manager.getRegions().stream().map(Region::name).toList();
         }

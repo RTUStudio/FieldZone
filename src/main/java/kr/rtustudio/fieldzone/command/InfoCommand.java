@@ -4,8 +4,9 @@ import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.data.Point;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
+import kr.rtustudio.fieldzone.region.RegionFlag;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -21,35 +22,26 @@ public class InfoCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected Result execute(RSCommandData data) {
+    protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
 
         if (data.length() >= 2) {
-            String name = data.args(1);
+            String name = data.get(1);
             Region region = manager.get(name);
             if (region == null) {
-                chat().announce(message().get(player, "region.not-found"));
+                notifier.announce(message.get(player, "region.not-found"));
                 return Result.FAILURE;
             }
-
-            chat().announce(message().get(player, "region.info.header").replace("{region}", name));
-            chat().announce(message().get(player, "region.info.world").replace("{world}", region.pos().world()));
-            chat().announce(message().get(player, "region.info.points").replace("{points}", String.valueOf(region.pos().points().size())));
-            chat().announce(message().get(player, "region.info.area").replace("{area}", String.format("%.1f", region.pos().area())));
-            chat().announce(message().get(player, "region.info.perimeter").replace("{perimeter}", String.format("%.1f", region.pos().perimeter())));
-
-            Point center = region.pos().center();
-            chat().announce(message().get(player, "region.info.center")
-                    .replace("{x}", String.valueOf(center.x()))
-                    .replace("{z}", String.valueOf(center.z())));
 
             // 플래그 정보 표시
             if (!region.flags().isEmpty()) {
                 String flagsStr = region.flags().stream()
-                        .map(f -> message().get(player, "region.flag." + f.getKey()))
-                        .reduce((a, b) -> a + ", " + b).orElse("");
-                chat().announce(message().get(player, "region.info.flags").replace("{flags}", flagsStr));
+                        .map(RegionFlag::getKey)
+                        .map(key -> message.get(player, "region.flag." + key))
+                        .reduce((a, b) -> a + ", " + b)
+                        .orElse("");
+                notifier.announce(message.get(player, "region.info.flags").replace("{flags}", flagsStr));
             }
 
             return Result.SUCCESS;
@@ -58,7 +50,7 @@ public class InfoCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected List<String> tabComplete(RSCommandData data) {
+    protected List<String> tabComplete(CommandArgs data) {
         if (data.length() == 2) {
             return manager.getRegions().stream()
                     .map(Region::name)

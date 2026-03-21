@@ -7,7 +7,7 @@ import kr.rtustudio.fieldzone.data.WandMode;
 import kr.rtustudio.fieldzone.data.WandPos;
 import kr.rtustudio.framework.bukkit.api.configuration.internal.translation.message.MessageTranslation;
 import kr.rtustudio.framework.bukkit.api.core.scheduler.ScheduledTask;
-import kr.rtustudio.framework.bukkit.api.player.PlayerChat;
+import kr.rtustudio.framework.bukkit.api.player.Notifier;
 import kr.rtustudio.framework.bukkit.api.scheduler.CraftScheduler;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -19,14 +19,14 @@ import java.util.*;
 public class WandManager {
 
     private final FieldZone plugin;
-    private final PlayerChat chat;
+    private final Notifier chat;
     private final MessageTranslation message;
     private final GlobalConfig config;
-    private final Map<UUID, PlayerWandState> states = new HashMap<>();
+    private final Map<UUID, PlayerWandState> states = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
 
     public WandManager(FieldZone plugin) {
         this.plugin = plugin;
-        this.chat = PlayerChat.of(plugin);
+        this.chat = Notifier.of(plugin);
         this.message = plugin.getConfiguration().getMessage();
         this.config = plugin.getConfiguration(GlobalConfig.class);
     }
@@ -288,9 +288,9 @@ public class WandManager {
         if (positions.size() < 2) return new Columns(Collections.emptyList(), Collections.emptyList());
 
         Set<Integer> intersectingEdges = findIntersectingEdges(positions);
-        List<Column> columns = new ArrayList<>();
-        List<Column> intersectColumns = new ArrayList<>();
-        Set<Long> used = new HashSet<>();
+        List<Column> columns = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
+        List<Column> intersectColumns = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
+        Set<Long> used = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
 
         for (int i = 0; i < positions.size(); i++) {
             BlockPos a = positions.get(i);
@@ -326,7 +326,7 @@ public class WandManager {
     }
 
     private Set<Integer> findIntersectingEdges(List<BlockPos> positions) {
-        Set<Integer> intersecting = new HashSet<>();
+        Set<Integer> intersecting = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
         if (positions.size() < 3) return intersecting;
 
         int n = positions.size();

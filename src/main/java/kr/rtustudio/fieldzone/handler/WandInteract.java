@@ -1,4 +1,4 @@
-package kr.rtustudio.fieldzone.listener;
+package kr.rtustudio.fieldzone.handler;
 
 import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.configuration.GlobalConfig;
@@ -52,9 +52,9 @@ public class WandInteract extends RSListener<FieldZone> {
 
         WandMode mode = manager.toggleMode(player.getUniqueId());
         String modeKey = "wand.mode." + mode.name().toLowerCase();
-        String msg = message().get(player, "wand.mode.toggle")
-                .replace("{mode}", message().get(player, modeKey));
-        chat().announce(player, msg);
+        String msg = message.get(player, "wand.mode.toggle")
+                .replace("{mode}", message.get(player, modeKey));
+        notifier.announce(player, msg);
         e.setCancelled(true);
     }
 
@@ -95,14 +95,14 @@ public class WandInteract extends RSListener<FieldZone> {
             manager.addSquareFirst(player, block.getLocation());
             WandPos pos = manager.get(player.getUniqueId());
             int count = pos != null ? pos.positions().size() : 0;
-            String msg = replace(message().get(player, "wand.square.first"), block.getLocation(), count);
-            chat().announce(player, msg);
+            String msg = replace(message.get(player, "wand.square.first"), block.getLocation(), count);
+            notifier.announce(player, msg);
         } else if (action == Action.RIGHT_CLICK_BLOCK) {
             manager.addSquareSecond(player, block.getLocation());
             WandPos pos = manager.get(player.getUniqueId());
             int count = pos != null ? pos.positions().size() : 0;
-            String msg = replace(message().get(player, "wand.square.second"), block.getLocation(), count);
-            chat().announce(player, msg);
+            String msg = replace(message.get(player, "wand.square.second"), block.getLocation(), count);
+            notifier.announce(player, msg);
         }
     }
 
@@ -149,8 +149,8 @@ public class WandInteract extends RSListener<FieldZone> {
         if (wandPos == null) return;
 
         int count = wandPos.positions().size();
-        String message = replace(message().get(player, "wand.add"), location, count);
-        chat().announce(player, message);
+        String msg = replace(message.get(player, "wand.add"), location, count);
+        notifier.announce(player, msg);
     }
 
     private void removePosition(Player player) {
@@ -162,8 +162,8 @@ public class WandInteract extends RSListener<FieldZone> {
         manager.removeLastPosition(player);
         WandPos after = manager.get(uuid);
         int count = after != null ? after.positions().size() : 0;
-        String message = message().get(player, "wand.remove").replace("{count}", String.valueOf(count));
-        chat().announce(player, message);
+        String msg = message.get(player, "wand.remove").replace("{count}", String.valueOf(count));
+        notifier.announce(player, msg);
     }
 
     private String replace(String message, Location location, int count) {

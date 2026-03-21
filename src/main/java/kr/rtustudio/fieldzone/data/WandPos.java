@@ -1,6 +1,6 @@
 package kr.rtustudio.fieldzone.data;
 
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 
 /**
@@ -9,19 +9,19 @@ import java.util.List;
 public record WandPos(String world, List<BlockPos> positions) {
 
     public WandPos(String world) {
-        this(world, new ArrayList<>());
+        this(world, new ObjectArrayList<>());
     }
 
     public WandPos(String world, List<BlockPos> positions) {
         this.world = world;
-        this.positions = new ArrayList<>(positions);
+        this.positions = new ObjectArrayList<>(positions);
     }
 
     /**
      * 새로운 점 추가
      */
     public WandPos addPosition(BlockPos pos) {
-        List<BlockPos> newPositions = new ArrayList<>(positions);
+        List<BlockPos> newPositions = new ObjectArrayList<>(positions);
         newPositions.add(pos);
         return new WandPos(world, newPositions);
     }
@@ -31,7 +31,7 @@ public record WandPos(String world, List<BlockPos> positions) {
      */
     public WandPos removeLastPosition() {
         if (positions.isEmpty()) return this;
-        List<BlockPos> newPositions = new ArrayList<>(positions);
+        List<BlockPos> newPositions = new ObjectArrayList<>(positions);
         newPositions.remove(newPositions.size() - 1);
         return new WandPos(world, newPositions);
     }

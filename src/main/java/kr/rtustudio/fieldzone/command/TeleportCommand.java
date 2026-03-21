@@ -5,7 +5,7 @@ import kr.rtustudio.fieldzone.data.Point;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -24,20 +24,20 @@ public class TeleportCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected Result execute(RSCommandData data) {
+    protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
         if (data.length() >= 2) {
-            String name = data.args(1);
+            String name = data.get(1);
             Region region = manager.get(name);
             if (region == null) {
-                chat().announce(message().get(player, "region.not-found"));
+                notifier.announce(message.get(player, "region.not-found"));
                 return Result.FAILURE;
             }
 
             World world = Bukkit.getWorld(region.pos().world());
             if (world == null) {
-                chat().announce(message().get(player, "region.world-not-found"));
+                notifier.announce(message.get(player, "region.world-not-found"));
                 return Result.FAILURE;
             }
 
@@ -53,14 +53,14 @@ public class TeleportCommand extends RSCommand<FieldZone> {
             }
 
             player.teleport(location);
-            chat().announce(message().get(player, "region.teleport").replace("{region}", name));
+            notifier.announce(message.get(player, "region.teleport").replace("{region}", name));
             return Result.SUCCESS;
         }
         return Result.WRONG_USAGE;
     }
 
     @Override
-    protected List<String> tabComplete(RSCommandData data) {
+    protected List<String> tabComplete(CommandArgs data) {
         if (data.length() == 2) {
             return manager.getRegions().stream()
                     .map(Region::name)

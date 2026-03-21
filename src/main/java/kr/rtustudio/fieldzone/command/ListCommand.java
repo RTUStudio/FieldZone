@@ -4,7 +4,7 @@ import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -20,31 +20,31 @@ public class ListCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected Result execute(RSCommandData data) {
+    protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
 
         List<Region> regions = manager.getRegions();
         if (regions.isEmpty()) {
-            chat().announce(message().get(player, "region.list.empty"));
+            notifier.announce(message.get(player, "region.list.empty"));
             return Result.SUCCESS;
         }
 
-        chat().announce(message().get(player, "region.list.header").replace("{count}", String.valueOf(regions.size())));
+        notifier.announce(message.get(player, "region.list.header").replace("{count}", String.valueOf(regions.size())));
         for (Region region : regions) {
-            String info = message().get(player, "region.list.item")
-                    .replace("{name}", region.name())
+            String line = message.get(player, "region.list.format")
+                    .replace("{region}", region.name())
                     .replace("{world}", region.pos().world())
                     .replace("{points}", String.valueOf(region.pos().points().size()))
                     .replace("{area}", String.format("%.1f", region.pos().area()));
-            chat().announce(player, info);
+            notifier.announce(player, line);
         }
 
         return Result.SUCCESS;
     }
 
     @Override
-    protected List<String> tabComplete(RSCommandData data) {
+    protected List<String> tabComplete(CommandArgs data) {
         return List.of();
     }
 

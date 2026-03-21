@@ -8,8 +8,8 @@ import kr.rtustudio.fieldzone.data.Point;
 import kr.rtustudio.fieldzone.data.PolygonPos;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.fieldzone.region.RegionFlag;
-import kr.rtustudio.framework.bukkit.api.platform.JSON;
-import kr.rtustudio.framework.bukkit.api.storage.Storage;
+import kr.rtustudio.storage.JSON;
+import kr.rtustudio.storage.Storage;
 import org.bukkit.Location;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,8 +19,8 @@ import java.util.concurrent.CompletableFuture;
 public class RegionManager {
 
     private final FieldZone plugin;
-    private final Map<String, Region> map = new HashMap<>();
-    private final Map<String, List<Region>> worldCache = new HashMap<>();
+    private final Map<String, Region> map = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
+    private final Map<String, List<Region>> worldCache = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
 
     public RegionManager(FieldZone plugin) {
         this.plugin = plugin;
@@ -30,8 +30,8 @@ public class RegionManager {
     public void reload() {
         map.clear();
         worldCache.clear();
-        Storage storage = plugin.getStorage();
-        storage.get("Region", JSON.of()).thenAccept(result -> {
+        Storage storage = plugin.getStorage("Region");
+        storage.get(JSON.of()).thenAccept(result -> {
             for (JsonObject json : result) {
                 Region region = parse(json);
                 if (region == null) continue;
@@ -42,7 +42,7 @@ public class RegionManager {
     }
 
     private void addCache(Region region) {
-        worldCache.computeIfAbsent(region.pos().world(), k -> new ArrayList<>()).add(region);
+        worldCache.computeIfAbsent(region.pos().world(), k -> new it.unimi.dsi.fastutil.objects.ObjectArrayList<>()).add(region);
     }
 
     private void removeCache(Region region) {
@@ -67,7 +67,7 @@ public class RegionManager {
             return null;
         }
 
-        List<Point> points = new ArrayList<>();
+        List<Point> points = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
         for (JsonElement element : pointsArray) {
             if (element.isJsonPrimitive()) {
                 points.add(new Point(element.getAsLong()));
@@ -81,7 +81,7 @@ public class RegionManager {
         }
 
         // Parse flags
-        Set<RegionFlag> flags = new HashSet<>();
+        Set<RegionFlag> flags = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
         JsonArray flagsArray = getArray(json, "flags");
         if (flagsArray != null) {
             for (JsonElement element : flagsArray) {
@@ -136,8 +136,8 @@ public class RegionManager {
     }
 
     public CompletableFuture<Boolean> add(Region region) {
-        Storage storage = plugin.getStorage();
-        return storage.get("Region", JSON.of("name", region.name())).thenApply(result -> {
+        Storage storage = plugin.getStorage("Region");
+        return storage.get(JSON.of("name", region.name())).thenApply(result -> {
             if (result == null || result.isEmpty()) {
                 JsonArray pointsArray = new JsonArray();
                 for (Point point : region.pos().points()) {
@@ -154,7 +154,7 @@ public class RegionManager {
                         .append("world", region.pos().world())
                         .append("points", pointsArray)
                         .append("flags", flagsArray);
-                storage.add("Region", json);
+                storage.add(json);
                 map.put(region.name(), region);
                 addCache(region);
                 // MapFrontiers에 생성 브로드캐스트
@@ -179,16 +179,16 @@ public class RegionManager {
             flagsArray.add(flag.getKey());
         }
 
-        Storage storage = plugin.getStorage();
-        storage.set("Region", JSON.of("name", regionName), JSON.of("flags", flagsArray));
+        Storage storage = plugin.getStorage("Region");
+        storage.set(JSON.of("name", regionName), JSON.of("flags", flagsArray));
     }
 
     public boolean remove(String regionName) {
         Region region = map.get(regionName);
         if (region == null) return false;
 
-        Storage storage = plugin.getStorage();
-        storage.set("Region", JSON.of("name", regionName), JSON.of());
+        Storage storage = plugin.getStorage("Region");
+        storage.set(JSON.of("name", regionName), JSON.of());
         map.remove(regionName);
         removeCache(region);
         // MapFrontiers에 삭제 브로드캐스트

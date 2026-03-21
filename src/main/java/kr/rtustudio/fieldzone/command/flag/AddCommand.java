@@ -5,12 +5,14 @@ import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.fieldzone.region.RegionFlag;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AddCommand extends RSCommand<FieldZone> {
 
@@ -22,37 +24,41 @@ public class AddCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected Result execute(RSCommandData data) {
+    protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
 
         if (data.length() < 4) return Result.WRONG_USAGE;
 
-        String regionName = data.args(2);
-        String flagKey = data.args(3);
+        String regionName = data.get(2);
+        String flagKey = data.get(3);
 
         Region region = manager.get(regionName);
         if (region == null) {
-            chat().announce(message().get(player, "region.not-found"));
+            notifier.announce(message.get(player, "region.not-found"));
             return Result.FAILURE;
         }
 
-        RegionFlag flag = parseFlag(flagKey);
-        if (flag == null) {
-            chat().announce(message().get(player, "region.flag.unknown").replace("{flag}", flagKey));
-            return Result.FAILURE;
+        try {
+            RegionFlag flag = RegionFlag.valueOf(flagKey.toUpperCase());
+            if (region.hasFlag(flag)) {
+                notifier.announce(message.get(player, "region.flag.exists"));
+            } else {
+                Set<RegionFlag> flags = new HashSet<>(region.flags());
+                flags.add(flag);
+                manager.updateFlags(regionName, flags);
+                notifier.announce(message.get(player, "region.flag.add")
+                        .replace("{region}", regionName)
+                        .replace("{flag}", flag.getKey()));
+            }
+        } catch (IllegalArgumentException e) {
+            notifier.announce(message.get(player, "region.flag.invalid"));
         }
-
-        Region updatedRegion = region.withFlag(flag);
-        manager.updateFlags(regionName, updatedRegion.flags());
-        chat().announce(message().get(player, "region.flag.add")
-                .replace("{region}", regionName)
-                .replace("{flag}", message().get(player, "region.flag." + flag.getKey())));
         return Result.SUCCESS;
     }
 
     @Override
-    protected List<String> tabComplete(RSCommandData data) {
+    protected List<String> tabComplete(CommandArgs data) {
         if (data.length() == 3) {
             return manager.getRegions().stream().map(Region::name).toList();
         } else if (data.length() == 4) {

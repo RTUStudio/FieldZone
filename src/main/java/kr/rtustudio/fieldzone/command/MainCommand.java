@@ -5,7 +5,7 @@ import kr.rtustudio.fieldzone.configuration.GlobalConfig;
 import kr.rtustudio.fieldzone.configuration.MapFrontiersConfig;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 
 public class MainCommand extends RSCommand<FieldZone> {
 
@@ -26,9 +26,9 @@ public class MainCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    public void reload(RSCommandData data) {
-        getPlugin().reloadConfiguration(GlobalConfig.class);
-        getPlugin().reloadConfiguration(MapFrontiersConfig.class);
+    public void reload(CommandArgs data) {
+        plugin.reloadConfiguration(GlobalConfig.class);
+        plugin.reloadConfiguration(MapFrontiersConfig.class);
         manager.reload();
     }
 

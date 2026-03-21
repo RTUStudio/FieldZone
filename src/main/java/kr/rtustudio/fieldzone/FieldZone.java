@@ -1,14 +1,15 @@
 package kr.rtustudio.fieldzone;
 
+import kr.rtustudio.configurate.model.ConfigPath;
 import kr.rtustudio.fieldzone.bridge.MapFrontiersBridge;
 import kr.rtustudio.fieldzone.command.MainCommand;
 import kr.rtustudio.fieldzone.configuration.FlagConfig;
 import kr.rtustudio.fieldzone.configuration.GlobalConfig;
 import kr.rtustudio.fieldzone.configuration.MapFrontiersConfig;
 import kr.rtustudio.fieldzone.dependency.PlaceholderAPI;
-import kr.rtustudio.fieldzone.listener.PlayerJoinQuit;
-import kr.rtustudio.fieldzone.listener.RegionWarning;
-import kr.rtustudio.fieldzone.listener.WandInteract;
+import kr.rtustudio.fieldzone.handler.PlayerJoinQuit;
+import kr.rtustudio.fieldzone.handler.RegionWarning;
+import kr.rtustudio.fieldzone.handler.WandInteract;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.manager.WandManager;
 import kr.rtustudio.framework.bukkit.api.RSPlugin;
@@ -41,11 +42,11 @@ public class FieldZone extends RSPlugin {
 
     @Override
     public void enable() {
-        initStorage("Region");
+        registerStorage("Region");
 
-        registerConfiguration(GlobalConfig.class, "Global");
-        registerConfiguration(FlagConfig.class, "Flag");
-        registerConfiguration(MapFrontiersConfig.class, "Bridges", "MapFrontiers");
+        registerConfiguration(GlobalConfig.class, ConfigPath.of("Global"));
+        registerConfiguration(FlagConfig.class, ConfigPath.of("Flag"));
+        registerConfiguration(MapFrontiersConfig.class, ConfigPath.of("Bridges", "MapFrontiers"));
 
         regionManager = new RegionManager(this);
         wandManager = new WandManager(this);

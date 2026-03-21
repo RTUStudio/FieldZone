@@ -1,3 +1,4 @@
+no-region: "Wilderness"
 wand:
   give: "<green>You received the wand.</green>"
   add: "<white>Point added: <red>{x}</red><gray>,</gray> <aqua>{z}</aqua> (<gray>{count}</gray>)</white>"

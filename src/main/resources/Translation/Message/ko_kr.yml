@@ -1,3 +1,4 @@
+no-region: "빈 공간"
 wand:
   give: "<green>도구를 받았습니다.</green>"
   add: "<white>점 추가: <red>{x}</red><gray>,</gray> <aqua>{z}</aqua> (<gray>{count}</gray>)</white>"

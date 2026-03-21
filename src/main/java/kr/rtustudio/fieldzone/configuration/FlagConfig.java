@@ -1,7 +1,7 @@
 package kr.rtustudio.fieldzone.configuration;
 
 import kr.rtustudio.configurate.objectmapping.meta.Comment;
-import kr.rtustudio.framework.bukkit.api.configuration.ConfigurationPart;
+import kr.rtustudio.configurate.model.ConfigurationPart;
 import kr.rtustudio.framework.bukkit.api.platform.MinecraftVersion;
 import lombok.Getter;
 
@@ -13,7 +13,7 @@ public class FlagConfig extends ConfigurationPart {
             Warning system settings
             경고 시스템 설정
             """)
-    private Warning warning = new Warning();
+    private Warning warning;
 
     @Getter
     public class Warning extends ConfigurationPart {
@@ -26,7 +26,7 @@ public class FlagConfig extends ConfigurationPart {
                 Particle settings
                 파티클 설정
                 """)
-        private Particle particle = new Particle();
+        private Particle particle;
 
         public double getDistanceSquared() {
             return distance * distance;

@@ -7,7 +7,7 @@ import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.manager.WandManager;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -25,47 +25,38 @@ public class CreateCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected Result execute(RSCommandData data) {
+    protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
         if (data.length() < 2) return Result.WRONG_USAGE;
 
-        String name = data.args(1);
+        String name = data.get(1);
         if (manager.get(name) != null) {
-            chat().announce(message().get(player, "region.exists"));
+            notifier.announce(message.get(player, "region.exists"));
             return Result.FAILURE;
         }
 
-        WandPos wandPos = wandManager.get(player.getUniqueId());
-        if (wandPos == null || !wandPos.isValid()) {
-            chat().announce(message().get(player, "region.no-position"));
+        WandPos wandPos = plugin.getWandManager().get(player.getUniqueId());
+        if (wandPos == null || wandPos.positions().size() < 3) {
+            notifier.announce(message.get(player, "region.not-enough-points"));
             return Result.FAILURE;
         }
 
-        PolygonPos polygonPos = new PolygonPos(wandPos.world(), wandPos.toPoints());
-
-        // 면적이 0인 경우(직선 혹은 점 형태)는 생성 불가
-        if (polygonPos.area() <= 0.0) {
-            chat().announce(message().get(player, "region.zero-area"));
-            return Result.FAILURE;
-        }
-
-        Region region = new Region(name, polygonPos);
-        manager.add(region).thenAccept(result -> {
-            if (result) {
-                chat().announce(message().get(player, "region.create")
-                        .replace("{region}", name)
-                        .replace("{points}", String.valueOf(polygonPos.points().size()))
-                        .replace("{area}", String.format("%.1f", polygonPos.area())));
+        Region region = new Region(name, new kr.rtustudio.fieldzone.data.PolygonPos(wandPos.world(), wandPos.toPoints()));
+        manager.add(region).thenAccept(success -> {
+            if (success) {
+                notifier.announce(message.get(player, "region.create").replace("{region}", name));
+                plugin.getWandManager().clear(player.getUniqueId());
+                // MapFrontiers 연동은 RegionManager 내부에서 add 시 브로드캐스트됨
             } else {
-                chat().announce(message().get(player, "region.exists"));
+                notifier.announce(message.get(player, "region.exists"));
             }
         });
         return Result.SUCCESS;
     }
 
     @Override
-    protected List<String> tabComplete(RSCommandData data) {
+    protected List<String> tabComplete(CommandArgs data) {
         return List.of("<이름>");
     }
 

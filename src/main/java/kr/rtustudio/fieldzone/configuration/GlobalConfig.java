@@ -1,19 +1,13 @@
 package kr.rtustudio.fieldzone.configuration;
 
 import kr.rtustudio.configurate.objectmapping.meta.Comment;
-import kr.rtustudio.framework.bukkit.api.configuration.ConfigurationPart;
+import kr.rtustudio.configurate.model.ConfigurationPart;
 import kr.rtustudio.framework.bukkit.api.platform.MinecraftVersion;
 import lombok.Getter;
 
 @Getter
 @SuppressWarnings({"unused", "CanBeFinal", "FieldCanBeLocal", "FieldMayBeFinal", "InnerClassMayBeStatic"})
 public class GlobalConfig extends ConfigurationPart {
-
-    @Comment("""
-            PlaceholderAPI - text shown when no region
-            PlaceholderAPI - 지역이 없을 때 표시할 텍스트
-            """)
-    private String noRegionText = "빈 공간";
 
     @Comment("""
             Wand settings

@@ -3,7 +3,7 @@ package kr.rtustudio.fieldzone.command;
 import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.manager.WandManager;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -19,17 +19,17 @@ public class ClearCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected Result execute(RSCommandData data) {
+    protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
 
-        wandManager.clear(player.getUniqueId());
-        chat().announce(message().get(player, "wand.clear"));
+        plugin.getWandManager().clear(player.getUniqueId());
+        notifier.announce(message.get(player, "wand.clear"));
         return Result.SUCCESS;
     }
 
     @Override
-    protected List<String> tabComplete(RSCommandData data) {
+    protected List<String> tabComplete(CommandArgs data) {
         return List.of();
     }
 

@@ -1,6 +1,6 @@
 package kr.rtustudio.fieldzone.data;
 
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 
 public record PolygonPos(String world, List<Point> points, BoundingBox boundingBox,
@@ -12,7 +12,7 @@ public record PolygonPos(String world, List<Point> points, BoundingBox boundingB
      * 포인트 복사 후 캐시 계산
      */
     public PolygonPos(String world, List<Point> points) {
-        this(world, new ArrayList<>(points), calculateBoundingBox(points),
+        this(world, new ObjectArrayList<>(points), calculateBoundingBox(points),
                 checkAxisAlignedRectangle(points, calculateBoundingBox(points)), null, null, null);
     }
 

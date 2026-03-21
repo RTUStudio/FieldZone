@@ -3,7 +3,7 @@ package kr.rtustudio.fieldzone.command;
 import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.configuration.GlobalConfig;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
-import kr.rtustudio.framework.bukkit.api.command.RSCommandData;
+import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import kr.rtustudio.framework.bukkit.api.registry.CustomItems;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -25,37 +25,42 @@ public class WandCommand extends RSCommand<FieldZone> {
     }
 
     @Override
-    protected Result execute(RSCommandData data) {
+    protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
 
         String wandItemId = config.getWand().getItem();
-        ItemStack itemStack = CustomItems.from(wandItemId);
-        if (itemStack == null || itemStack.getType() == Material.AIR) {
-            chat().announce(message().get(player, "wand.invalid-item"));
+        ItemStack wand = CustomItems.from(wandItemId);
+        if (wand == null) {
+            notifier.announce(message.get(player, "wand.invalid-item"));
             return Result.FAILURE;
         }
 
-        ItemMeta meta = itemStack.getItemMeta();
+        ItemMeta meta = wand.getItemMeta();
         if (meta != null) {
             PersistentDataContainer container = meta.getPersistentDataContainer();
-            container.set(getPlugin().getWandKey(), PersistentDataType.STRING, player.getUniqueId().toString());
+            container.set(plugin.getWandKey(), PersistentDataType.STRING, player.getUniqueId().toString());
             meta.setDisplayName("§6FieldZone Wand");
             meta.setLore(List.of(
                     "§7좌클릭: 점 추가",
                     "§7우클릭: 마지막 점 제거",
                     "§7소유자: §f" + player.getName()
             ));
-            itemStack.setItemMeta(meta);
+            wand.setItemMeta(meta);
         }
 
-        player.getInventory().addItem(itemStack);
-        chat().announce(message().get(player, "wand.give"));
+        if (player.getInventory().firstEmpty() == -1) {
+            notifier.announce(message.get(player, "wand.inventory.full"));
+            return Result.FAILURE;
+        }
+
+        player.getInventory().addItem(wand);
+        notifier.announce(message.get(player, "wand.give"));
         return Result.SUCCESS;
     }
 
     @Override
-    protected List<String> tabComplete(RSCommandData data) {
+    protected List<String> tabComplete(CommandArgs data) {
         return List.of();
     }
 

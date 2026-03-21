@@ -1,4 +1,4 @@
-package kr.rtustudio.fieldzone.listener;
+package kr.rtustudio.fieldzone.handler;
 
 import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.configuration.MapFrontiersConfig;

@@ -1,26 +1,25 @@
 package kr.rtustudio.fieldzone.dependency;
 
 import kr.rtustudio.fieldzone.FieldZone;
-import kr.rtustudio.fieldzone.configuration.GlobalConfig;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.framework.bukkit.api.integration.wrapper.PlaceholderWrapper;
+import kr.rtustudio.framework.bukkit.api.integration.wrapper.PlaceholderArgs;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class PlaceholderAPI extends PlaceholderWrapper<FieldZone> {
 
     private final RegionManager manager;
-    private final GlobalConfig config;
 
     public PlaceholderAPI(FieldZone plugin) {
         super(plugin);
         this.manager = plugin.getRegionManager();
-        this.config = plugin.getConfiguration(GlobalConfig.class);
     }
 
     @Override
-    public String onRequest(OfflinePlayer offlinePlayer, String[] params) {
+    public String onRequest(OfflinePlayer offlinePlayer, PlaceholderArgs arguments) {
+        String[] params = arguments.args();
         if (params.length == 0) return "error: invalid_id";
 
         String key = params[0].toLowerCase();
@@ -32,7 +31,7 @@ public class PlaceholderAPI extends PlaceholderWrapper<FieldZone> {
                     Player player = offlinePlayer.getPlayer();
                     if (player == null) yield "error: player_not_found";
                     Region region = manager.get(player.getLocation());
-                    yield region != null ? region.name() : config.getNoRegionText();
+                    yield region != null ? region.name() : message.get(player, "no-region");
                 }
                 yield "error: player_offline";
             }

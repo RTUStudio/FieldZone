@@ -1,7 +1,9 @@
 package kr.rtustudio.fieldzone.configuration;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+
 import kr.rtustudio.configurate.objectmapping.meta.Comment;
-import kr.rtustudio.framework.bukkit.api.configuration.ConfigurationPart;
+import kr.rtustudio.configurate.model.ConfigurationPart;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -21,7 +23,7 @@ public class MapFrontiersConfig extends ConfigurationPart {
             Region-specific colors
             지역 별 색상
             """)
-    private Map<String, String> colors = make(new HashMap<>(), map -> {
+    private Map<String, String> colors = make(new Object2ObjectOpenHashMap<>(), map -> {
         map.put("example_region", "#000000");
     });
 
