@@ -28,6 +28,7 @@ public class FieldZone extends RSPlugin {
     private RegionManager regionManager;
     @Getter
     private WandManager wandManager;
+
     @Getter
     private MapFrontiersBridge mapFrontiersBridge;
 
