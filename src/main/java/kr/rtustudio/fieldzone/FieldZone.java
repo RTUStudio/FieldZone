@@ -24,6 +24,7 @@ public class FieldZone extends RSPlugin {
 
     @Getter
     private final NamespacedKey wandKey = new NamespacedKey(this, "wand_owner");
+    
     @Getter
     private RegionManager regionManager;
     @Getter
