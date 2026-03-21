@@ -1,5 +1,6 @@
 plugins {
     java
+    `maven-publish`
     id("io.freefair.lombok") version "9.2.0"
     id("com.gradleup.shadow") version "9.3.2"
     id("xyz.jpenilla.run-paper") version "3.0.2"
@@ -120,3 +121,27 @@ tasks.processResources {
         expand(props)
     }
 }
+
+publishing {
+    repositories {
+        maven {
+            url = uri("https://repo.codemc.io/repository/rtustudio/")
+
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("plugin") {
+            groupId = "kr.rtustudio"
+            artifactId = "fieldzone"
+            version = project.version.toString()
+
+            from(components["shadow"])
+        }
+    }
+}
+
