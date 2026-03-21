@@ -101,7 +101,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("kr.rtustudio:fieldzone:1.1.0")
+    compileOnly("kr.rtustudio:fieldzone:1.1.1")
 }
 ```
 

@@ -3,6 +3,9 @@ package kr.rtustudio.fieldzone.manager;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.data.Point;
 import kr.rtustudio.fieldzone.data.PolygonPos;
@@ -19,18 +22,19 @@ import java.util.concurrent.CompletableFuture;
 public class RegionManager {
 
     private final FieldZone plugin;
-    private final Map<String, Region> map = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
-    private final Map<String, List<Region>> worldCache = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
+    private final Storage storage;
+    private final Map<String, Region> map = new Object2ObjectOpenHashMap<>();
+    private final Map<String, List<Region>> worldCache = new Object2ObjectOpenHashMap<>();
 
     public RegionManager(FieldZone plugin) {
         this.plugin = plugin;
+        this.storage = plugin.getStorage("Region");
         reload();
     }
 
     public void reload() {
         map.clear();
         worldCache.clear();
-        Storage storage = plugin.getStorage("Region");
         storage.get(JSON.of()).thenAccept(result -> {
             for (JsonObject json : result) {
                 Region region = parse(json);
@@ -42,7 +46,7 @@ public class RegionManager {
     }
 
     private void addCache(Region region) {
-        worldCache.computeIfAbsent(region.pos().world(), k -> new it.unimi.dsi.fastutil.objects.ObjectArrayList<>()).add(region);
+        worldCache.computeIfAbsent(region.pos().world(), k -> new ObjectArrayList<>()).add(region);
     }
 
     private void removeCache(Region region) {
@@ -67,7 +71,7 @@ public class RegionManager {
             return null;
         }
 
-        List<Point> points = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
+        List<Point> points = new ObjectArrayList<>();
         for (JsonElement element : pointsArray) {
             if (element.isJsonPrimitive()) {
                 points.add(new Point(element.getAsLong()));
@@ -81,7 +85,7 @@ public class RegionManager {
         }
 
         // Parse flags
-        Set<RegionFlag> flags = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
+        Set<RegionFlag> flags = new ObjectOpenHashSet<>();
         JsonArray flagsArray = getArray(json, "flags");
         if (flagsArray != null) {
             for (JsonElement element : flagsArray) {
@@ -136,7 +140,6 @@ public class RegionManager {
     }
 
     public CompletableFuture<Boolean> add(Region region) {
-        Storage storage = plugin.getStorage("Region");
         return storage.get(JSON.of("name", region.name())).thenApply(result -> {
             if (result == null || result.isEmpty()) {
                 JsonArray pointsArray = new JsonArray();
@@ -179,7 +182,6 @@ public class RegionManager {
             flagsArray.add(flag.getKey());
         }
 
-        Storage storage = plugin.getStorage("Region");
         storage.set(JSON.of("name", regionName), JSON.of("flags", flagsArray));
     }
 
@@ -187,7 +189,6 @@ public class RegionManager {
         Region region = map.get(regionName);
         if (region == null) return false;
 
-        Storage storage = plugin.getStorage("Region");
         storage.set(JSON.of("name", regionName), JSON.of());
         map.remove(regionName);
         removeCache(region);
