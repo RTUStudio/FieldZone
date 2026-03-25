@@ -6,10 +6,10 @@ import kr.rtustudio.fieldzone.command.MainCommand;
 import kr.rtustudio.fieldzone.configuration.FlagConfig;
 import kr.rtustudio.fieldzone.configuration.GlobalConfig;
 import kr.rtustudio.fieldzone.configuration.MapFrontiersConfig;
-import kr.rtustudio.fieldzone.integration.PlaceholderAPI;
 import kr.rtustudio.fieldzone.handler.PlayerJoinQuit;
 import kr.rtustudio.fieldzone.handler.RegionWarning;
 import kr.rtustudio.fieldzone.handler.WandInteract;
+import kr.rtustudio.fieldzone.integration.PlaceholderAPI;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.manager.WandManager;
 import kr.rtustudio.framework.bukkit.api.RSPlugin;
@@ -24,7 +24,7 @@ public class FieldZone extends RSPlugin {
 
     @Getter
     private final NamespacedKey wandKey = new NamespacedKey(this, "wand_owner");
-    
+
     @Getter
     private RegionManager regionManager;
     @Getter
@@ -38,12 +38,13 @@ public class FieldZone extends RSPlugin {
         loadLibrary("it.unimi.dsi:fastutil:8.5.15");
     }
 
-    public void load() {
+    @Override
+    protected void load() {
         instance = this;
     }
 
     @Override
-    public void enable() {
+    protected void enable() {
         registerStorage("Region");
 
         registerConfiguration(GlobalConfig.class, ConfigPath.of("Global"));
@@ -67,7 +68,7 @@ public class FieldZone extends RSPlugin {
     }
 
     @Override
-    public void disable() {
+    protected void disable() {
         if (mapFrontiersBridge != null) {
             mapFrontiersBridge.close();
             mapFrontiersBridge = null;

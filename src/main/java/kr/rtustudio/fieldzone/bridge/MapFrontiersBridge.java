@@ -180,6 +180,11 @@ public final class MapFrontiersBridge implements AutoCloseable {
         out.writeByte(value & 0x7F);
     }
 
+    private static boolean isValidHexColor(String hex) {
+        return hex != null && hex.length() == HEX_COLOR_PATTERN_LENGTH && hex.charAt(0) == '#'
+                && hex.substring(1).chars().allMatch(c -> Character.isDigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
+    }
+
     @Override
     public void close() {
         this.plugin.getServer().getMessenger().unregisterOutgoingPluginChannel(this.plugin, CHANNEL_FRONTIER_CREATED);
@@ -195,7 +200,8 @@ public final class MapFrontiersBridge implements AutoCloseable {
         try {
             sendFrontierCreatedLikeMapFrontiers(player, worldToDimensionKey(world), false,
                     region.name(), "", vertices, region.uuid(), 0, resolveRegionColor(region.name()));
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
     public void sendRegionDeletedToPlayer(Player player, Region region) {
@@ -203,7 +209,8 @@ public final class MapFrontiersBridge implements AutoCloseable {
         if (world == null) return;
         try {
             sendFrontierDeletedLikeMapFrontiers(player, worldToDimensionKey(world), region.uuid(), false, 0);
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
     public void broadcastRegionCreated(Region region) {
@@ -250,10 +257,5 @@ public final class MapFrontiersBridge implements AutoCloseable {
         String hex = (mfConfig.getColors() != null) ? mfConfig.getColors().get(regionName) : null;
         if (!isValidHexColor(hex)) hex = mfConfig.getDefaultColorHex();
         return isValidHexColor(hex) ? 0xFF000000 | Integer.parseInt(hex.substring(1), 16) : 0xFFFFFFFF;
-    }
-
-    private static boolean isValidHexColor(String hex) {
-        return hex != null && hex.length() == HEX_COLOR_PATTERN_LENGTH && hex.charAt(0) == '#'
-                && hex.substring(1).chars().allMatch(c -> Character.isDigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
     }
 }

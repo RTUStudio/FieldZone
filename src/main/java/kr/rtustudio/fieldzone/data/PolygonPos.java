@@ -1,6 +1,7 @@
 package kr.rtustudio.fieldzone.data;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import java.util.List;
 
 public record PolygonPos(String world, List<Point> points, BoundingBox boundingBox,

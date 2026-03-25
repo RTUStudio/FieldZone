@@ -4,8 +4,8 @@ import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.fieldzone.region.RegionFlag;
-import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
+import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -20,6 +20,14 @@ public class RemoveCommand extends RSCommand<FieldZone> {
     public RemoveCommand(FieldZone plugin) {
         super(plugin, "remove", PermissionDefault.OP);
         this.manager = plugin.getRegionManager();
+    }
+
+    private static RegionFlag parseFlag(String key) {
+        try {
+            return RegionFlag.valueOf(key.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     @Override
@@ -67,13 +75,5 @@ public class RemoveCommand extends RSCommand<FieldZone> {
             }
         }
         return List.of();
-    }
-
-    private static RegionFlag parseFlag(String key) {
-        try {
-            return RegionFlag.valueOf(key.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 }

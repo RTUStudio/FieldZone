@@ -4,8 +4,8 @@ import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.configuration.GlobalConfig;
 import kr.rtustudio.fieldzone.configuration.MapFrontiersConfig;
 import kr.rtustudio.fieldzone.manager.RegionManager;
-import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
+import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 
 public class MainCommand extends RSCommand<FieldZone> {
 

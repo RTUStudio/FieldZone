@@ -1,10 +1,8 @@
 package kr.rtustudio.fieldzone.region;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-
 import kr.rtustudio.fieldzone.data.PolygonPos;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 

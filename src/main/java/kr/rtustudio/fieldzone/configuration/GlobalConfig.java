@@ -1,12 +1,18 @@
 package kr.rtustudio.fieldzone.configuration;
 
-import kr.rtustudio.configurate.objectmapping.meta.Comment;
 import kr.rtustudio.configurate.model.ConfigurationPart;
+import kr.rtustudio.configurate.objectmapping.meta.Comment;
 import kr.rtustudio.framework.bukkit.api.platform.MinecraftVersion;
 import lombok.Getter;
 
 @Getter
-@SuppressWarnings({"unused", "CanBeFinal", "FieldCanBeLocal", "FieldMayBeFinal", "InnerClassMayBeStatic"})
+@SuppressWarnings({
+        "unused",
+        "CanBeFinal",
+        "FieldCanBeLocal",
+        "FieldMayBeFinal",
+        "InnerClassMayBeStatic"
+})
 public class GlobalConfig extends ConfigurationPart {
 
     @Comment("""

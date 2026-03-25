@@ -6,7 +6,6 @@ import kr.rtustudio.fieldzone.data.WandMode;
 import kr.rtustudio.fieldzone.data.WandPos;
 import kr.rtustudio.fieldzone.manager.WandManager;
 import kr.rtustudio.framework.bukkit.api.listener.RSListener;
-import kr.rtustudio.framework.bukkit.api.registry.CustomItems;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -16,9 +15,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 import java.util.UUID;
@@ -59,11 +55,7 @@ public class WandInteract extends RSListener<FieldZone> {
     }
 
     private boolean isOwnedWand(Player player, ItemStack stack) {
-        if (stack == null) return false;
-        String id = CustomItems.to(stack);
-        if (id == null) return false;
-        if (!id.equalsIgnoreCase(config.getWand().getItem())) return false;
-        return check(player, stack);
+        return manager.isOwnedWand(player, stack);
     }
 
     @EventHandler
@@ -74,10 +66,8 @@ public class WandInteract extends RSListener<FieldZone> {
         if (!getPlugin().hasPermission(player, "wand")) return;
         if (e.getHand() != EquipmentSlot.HAND) return;
         ItemStack mainHand = player.getInventory().getItemInMainHand();
-        String id = CustomItems.to(mainHand);
-        if (id == null) return;
-        if (!id.equalsIgnoreCase(config.getWand().getItem())) return;
-        if (!check(player, mainHand)) return;
+
+        if (!isOwnedWand(player, mainHand)) return;
 
         WandMode mode = manager.getMode(player.getUniqueId());
         switch (mode) {
@@ -127,19 +117,6 @@ public class WandInteract extends RSListener<FieldZone> {
             addPosition(player, block.getLocation());
         } else if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
             removePosition(player);
-        }
-    }
-
-    private boolean check(Player player, ItemStack itemStack) {
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) return false;
-        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
-        String uuid = container.get(getPlugin().getWandKey(), PersistentDataType.STRING);
-        if (uuid == null) return false;
-        try {
-            return player.getUniqueId().equals(UUID.fromString(uuid));
-        } catch (IllegalArgumentException e) {
-            return false;
         }
     }
 

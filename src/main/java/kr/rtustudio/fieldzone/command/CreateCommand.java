@@ -6,8 +6,8 @@ import kr.rtustudio.fieldzone.data.WandPos;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.manager.WandManager;
 import kr.rtustudio.fieldzone.region.Region;
-import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
+import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -36,17 +36,17 @@ public class CreateCommand extends RSCommand<FieldZone> {
             return Result.FAILURE;
         }
 
-        WandPos wandPos = plugin.getWandManager().get(player.getUniqueId());
+        WandPos wandPos = wandManager.get(player.getUniqueId());
         if (wandPos == null || wandPos.positions().size() < 3) {
             notifier.announce(message.get(player, "region.not-enough-points"));
             return Result.FAILURE;
         }
 
-        Region region = new Region(name, new kr.rtustudio.fieldzone.data.PolygonPos(wandPos.world(), wandPos.toPoints()));
+        Region region = new Region(name, new PolygonPos(wandPos.world(), wandPos.toPoints()));
         manager.add(region).thenAccept(success -> {
             if (success) {
                 notifier.announce(message.get(player, "region.create").replace("{region}", name));
-                plugin.getWandManager().clear(player.getUniqueId());
+                wandManager.clear(player.getUniqueId());
                 // MapFrontiers 연동은 RegionManager 내부에서 add 시 브로드캐스트됨
             } else {
                 notifier.announce(message.get(player, "region.exists"));

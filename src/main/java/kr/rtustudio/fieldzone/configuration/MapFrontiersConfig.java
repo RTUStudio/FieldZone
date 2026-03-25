@@ -1,16 +1,20 @@
 package kr.rtustudio.fieldzone.configuration;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-
-import kr.rtustudio.configurate.objectmapping.meta.Comment;
 import kr.rtustudio.configurate.model.ConfigurationPart;
+import kr.rtustudio.configurate.objectmapping.meta.Comment;
 import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-@SuppressWarnings({"unused", "CanBeFinal", "FieldCanBeLocal", "FieldMayBeFinal", "InnerClassMayBeStatic"})
+@SuppressWarnings({
+        "unused",
+        "CanBeFinal",
+        "FieldCanBeLocal",
+        "FieldMayBeFinal",
+        "InnerClassMayBeStatic"
+})
 public class MapFrontiersConfig extends ConfigurationPart {
 
     @Comment("""
@@ -23,7 +27,7 @@ public class MapFrontiersConfig extends ConfigurationPart {
             Region-specific colors
             지역 별 색상
             """)
-    private Map<String, String> colors = make(new Object2ObjectOpenHashMap<>(), map -> {
+    private Map<String, String> colors = make(new HashMap<>(), map -> {
         map.put("example_region", "#000000");
     });
 

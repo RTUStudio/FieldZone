@@ -8,11 +8,16 @@ import kr.rtustudio.fieldzone.data.WandPos;
 import kr.rtustudio.framework.bukkit.api.configuration.internal.translation.message.MessageTranslation;
 import kr.rtustudio.framework.bukkit.api.core.scheduler.ScheduledTask;
 import kr.rtustudio.framework.bukkit.api.player.Notifier;
+import kr.rtustudio.framework.bukkit.api.registry.CustomItems;
 import kr.rtustudio.framework.bukkit.api.scheduler.CraftScheduler;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
@@ -29,6 +34,64 @@ public class WandManager {
         this.chat = Notifier.of(plugin);
         this.message = plugin.getConfiguration().getMessage();
         this.config = plugin.getConfiguration(GlobalConfig.class);
+    }
+
+    /**
+     * 필드 존 완드 아이템을 생성하여 플레이어의 인벤토리에 지급한다.
+     * 인벤토리가 가득 찼거나, 아이템 로드에 실패할 경우 false를 반환하고
+     * 오류 메시지를 출력한다.
+     */
+    public boolean giveWand(Player player) {
+        String wandItemId = config.getWand().getItem();
+        ItemStack wand = CustomItems.from(wandItemId);
+        if (wand == null) {
+            chat.announce(player, message.get(player, "wand.invalid-item"));
+            return false;
+        }
+
+        ItemMeta meta = wand.getItemMeta();
+        if (meta != null) {
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            container.set(plugin.getWandKey(), PersistentDataType.STRING, player.getUniqueId().toString());
+            meta.setDisplayName("§6FieldZone Wand");
+            meta.setLore(List.of(
+                    "§7좌클릭: 점 추가",
+                    "§7우클릭: 마지막 점 제거",
+                    "§7소유자: §f" + player.getName()
+            ));
+            wand.setItemMeta(meta);
+        }
+
+        if (player.getInventory().firstEmpty() == -1) {
+            chat.announce(player, message.get(player, "wand.inventory.full"));
+            return false;
+        }
+
+        player.getInventory().addItem(wand);
+        chat.announce(player, message.get(player, "wand.give"));
+        return true;
+    }
+
+    /**
+     * 아이템이 현재 플레이어의 고유한 완드인지 확인한다.
+     */
+    public boolean isOwnedWand(Player player, ItemStack stack) {
+        if (stack == null) return false;
+        String id = CustomItems.to(stack);
+        if (id == null || !id.equalsIgnoreCase(config.getWand().getItem())) return false;
+
+        ItemMeta itemMeta = stack.getItemMeta();
+        if (itemMeta == null) return false;
+
+        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+        String uuidStr = container.get(plugin.getWandKey(), PersistentDataType.STRING);
+        if (uuidStr == null) return false;
+
+        try {
+            return player.getUniqueId().equals(UUID.fromString(uuidStr));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private PlayerWandState getState(UUID uuid) {

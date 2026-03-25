@@ -12,9 +12,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 
 import java.util.UUID;
-import org.bukkit.event.player.PlayerRespawnEvent;
 
 @SuppressWarnings("unused")
 public class PlayerJoinQuit extends RSListener<FieldZone> {

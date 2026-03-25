@@ -4,8 +4,8 @@ import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.fieldzone.region.RegionFlag;
-import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
+import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -21,6 +21,14 @@ public class AddCommand extends RSCommand<FieldZone> {
     public AddCommand(FieldZone plugin) {
         super(plugin, "add", PermissionDefault.OP);
         this.manager = plugin.getRegionManager();
+    }
+
+    private static RegionFlag parseFlag(String key) {
+        try {
+            return RegionFlag.valueOf(key.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     @Override
@@ -65,13 +73,5 @@ public class AddCommand extends RSCommand<FieldZone> {
             return Arrays.stream(RegionFlag.values()).map(RegionFlag::getKey).toList();
         }
         return List.of();
-    }
-
-    private static RegionFlag parseFlag(String key) {
-        try {
-            return RegionFlag.valueOf(key.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 }
