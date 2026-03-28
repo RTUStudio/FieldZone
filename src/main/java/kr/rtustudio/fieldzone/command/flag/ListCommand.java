@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
 import java.util.List;
+import java.util.Map;
 
 public class ListCommand extends RSCommand<FieldZone> {
 
@@ -24,7 +25,6 @@ public class ListCommand extends RSCommand<FieldZone> {
     protected Result execute(CommandArgs data) {
         Player player = player();
         if (player == null) return Result.ONLY_PLAYER;
-
         if (data.length() < 3) return Result.WRONG_USAGE;
 
         String regionName = data.get(2);
@@ -40,8 +40,10 @@ public class ListCommand extends RSCommand<FieldZone> {
         }
 
         notifier.announce(message.get(player, "region.flag.list.header").replace("{region}", regionName));
-        for (RegionFlag flag : region.flags()) {
-            notifier.announce(message.get(player, "region.flag.list.item").replace("{flag}", flag.getKey()));
+        for (Map.Entry<RegionFlag, Boolean> entry : region.flags().entrySet()) {
+            notifier.announce(message.get(player, "region.flag.list.item")
+                    .replace("{flag}", entry.getKey().getKey())
+                    .replace("{value}", String.valueOf(entry.getValue())));
         }
         return Result.SUCCESS;
     }
@@ -53,5 +55,4 @@ public class ListCommand extends RSCommand<FieldZone> {
         }
         return List.of();
     }
-
 }

@@ -2,15 +2,18 @@ package kr.rtustudio.fieldzone;
 
 import kr.rtustudio.fieldzone.data.Point;
 import kr.rtustudio.fieldzone.manager.RegionManager;
+import kr.rtustudio.fieldzone.region.FlagState;
 import kr.rtustudio.fieldzone.region.Region;
 import kr.rtustudio.fieldzone.region.RegionFlag;
+import kr.rtustudio.fieldzone.region.RegionFlagRegistry;
 import org.bukkit.Location;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
- * 외부 플러그인에서 FieldZone의 지역 데이터에 접근하기 위한 API
+ * 외부 플러그인에서 FieldZone의 지역 데이터 및 플래그 시스템에 접근하기 위한 API
  */
 public class FieldZoneAPI {
 
@@ -20,6 +23,8 @@ public class FieldZoneAPI {
         if (plugin == null) plugin = FieldZone.getInstance();
         return plugin.getRegionManager();
     }
+
+    // ======================== Region Queries ========================
 
     /**
      * 해당 위치가 속한 지역을 반환합니다.
@@ -58,12 +63,17 @@ public class FieldZoneAPI {
     }
 
     /**
-     * 해당 위치의 지역에 특정 플래그가 설정되어 있는지 확인합니다.
+     * 해당 위치의 지역에 특정 플래그의 상태를 확인합니다.
+     *
+     * @return {@link FlagState#TRUE}, {@link FlagState#FALSE}, 또는 {@link FlagState#NONE}
      */
-    public static boolean hasFlag(Location location, RegionFlag flag) {
+    public static FlagState hasFlag(Location location, RegionFlag flag) {
         Region region = manager().get(location);
-        return region != null && region.hasFlag(flag);
+        if (region == null) return FlagState.NONE;
+        return region.hasFlag(flag);
     }
+
+    // ======================== Region Info ========================
 
     /**
      * 지역의 면적을 반환합니다.
@@ -103,4 +113,32 @@ public class FieldZoneAPI {
         return manager().getRegions().size();
     }
 
+    // ======================== Flag Registry ========================
+
+    /**
+     * 커스텀 플래그를 전역 레지스트리에 등록합니다.
+     * 외부 플러그인은 {@code onEnable()}에서 이 메서드를 호출하여 플래그를 추가할 수 있습니다.
+     *
+     * @param flag 등록할 플래그
+     */
+    public static void registerFlag(RegionFlag flag) {
+        RegionFlagRegistry.register(flag);
+    }
+
+    /**
+     * 커스텀 플래그를 전역 레지스트리에서 제거합니다.
+     * 외부 플러그인은 {@code onDisable()}에서 이 메서드를 호출하여 정리할 수 있습니다.
+     *
+     * @param flag 제거할 플래그
+     */
+    public static void unregisterFlag(RegionFlag flag) {
+        RegionFlagRegistry.unregister(flag);
+    }
+
+    /**
+     * 전역 레지스트리에 등록된 모든 플래그를 반환합니다.
+     */
+    public static Collection<RegionFlag> getRegisteredFlags() {
+        return RegionFlagRegistry.values();
+    }
 }

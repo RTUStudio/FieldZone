@@ -36,13 +36,15 @@ region:
     center: " <gray>▪</gray> <white>중심:</white> <white>({x}, {z})</white>"
     flags: " <gray>▪</gray> <white>플래그:</white> <white>{flags}</white>"
   flag:
-    add: "<green>지역 '<white>{region}</white>'에 플래그 '<white>{flag}</white>'를 추가했습니다.</green>"
-    remove: "<white>지역 '<white>{region}</white>'에서 플래그 '<white>{flag}</white>'를 제거했습니다.</white>"
-    unknown: "<red>알 수 없는 플래그: {flag}</red>"
+    set: "<green>지역 '<white>{region}</white>'에 플래그 '<white>{flag}</white>'를 <white>{value}</white>(으)로 설정했습니다.</green>"
+    clear: "<white>지역 '<white>{region}</white>'에서 플래그 '<white>{flag}</white>'를 해제했습니다.</white>"
+    already-set: "<yellow>플래그 '<white>{flag}</white>'가 이미 <white>{value}</white>(으)로 설정되어 있습니다.</yellow>"
+    not-set: "<yellow>이 지역에 해당 플래그가 설정되어 있지 않습니다.</yellow>"
+    invalid: "<red>알 수 없는 플래그: {flag}</red>"
     list:
       empty: "<white>지역 '<white>{region}</white>'에 설정된 플래그가 없습니다.</white>"
       header: "<gradient:#FFD700:#FFA500>===== 지역 플래그: <white>{region}</white> =====</gradient>"
-      item: " <gray>▪</gray> <white>{name}</white> <gray>({key})</gray>"
+      item: " <gray>▪</gray> <white>{flag}</white> <gray>=</gray> <white>{value}</white>"
 particle:
   toggle: "<white>파티클 표시: {status}</white>"
   on: "<green>켜짐</green>"

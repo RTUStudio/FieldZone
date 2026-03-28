@@ -34,7 +34,6 @@ public class FieldZone extends RSPlugin {
     private MapFrontiersBridge mapFrontiersBridge;
 
     public FieldZone() {
-        super("ko_kr");
         loadLibrary("it.unimi.dsi:fastutil:8.5.15");
     }
 

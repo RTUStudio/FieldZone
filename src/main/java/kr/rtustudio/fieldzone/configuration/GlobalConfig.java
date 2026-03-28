@@ -16,6 +16,12 @@ import lombok.Getter;
 public class GlobalConfig extends ConfigurationPart {
 
     @Comment("""
+            Whether to delete unregistered flags if their owner plugin is enabled
+            소유자 플러그인이 로드되었음에도 등록되지 않은 경우 해당 지역 플래그를 삭제할지 여부
+            """)
+    private boolean cleanUnregisteredFlags = false;
+
+    @Comment("""
             Wand settings
             도구 설정
             """)

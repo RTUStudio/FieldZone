@@ -22,8 +22,8 @@
 | `/fieldzone info <지역>` | 지역의 상세 정보를 확인합니다 (면적, 둘레, 중심, 플래그 등) |
 | `/fieldzone clear` | 선택한 모든 점을 초기화합니다 |
 | `/fieldzone particle` | 파티클 표시를 켜거나 끕니다 |
-| `/fieldzone flag add <지역> <플래그>` | 지역에 플래그를 추가합니다 |
-| `/fieldzone flag remove <지역> <플래그>` | 지역에서 플래그를 제거합니다 |
+| `/fieldzone flag set <지역> <플래그> [true\|false]` | 지역에 플래그 값을 설정합니다 (기본: true) |
+| `/fieldzone flag clear <지역> <플래그>` | 지역에서 플래그를 해제합니다 (NONE 상태로 복귀) |
 | `/fieldzone flag list <지역>` | 지역의 플래그 목록을 확인합니다 |
 | `/fieldzone reload` | 설정을 다시 불러옵니다 |
 
@@ -44,16 +44,21 @@
 
 ### 플래그
 
+플래그는 `namespace:key` 형식을 사용합니다. 내장 플래그는 `fieldzone` 네임스페이스를 사용하며, 외부 플러그인은 자신만의 네임스페이스로 커스텀 플래그를 등록할 수 있습니다.
+
 | 플래그 | 설명 |
 |---|---|
-| `WARNING` | 플레이어가 지역 경계에 가까이 가면 빨간색 파티클로 경계면을 표시합니다 |
+| `fieldzone:warning` | 플레이어가 지역 경계에 가까이 가면 빨간색 파티클로 경계면을 표시합니다 |
+
+> 명령어에서 `fieldzone:` 접두사는 생략 가능합니다. (예: `/fz flag set spawn warning`)
 
 ### 설정 파일
 
-#### Global.yml — 도구 및 파티클 설정
+#### Global.yml — 전역 설정
 
 | 항목 | 기본값 | 설명 |
 |---|---|---|
+| `clean-unregistered-flags` | `false` | 소유자 플러그인이 로드되었지만 플래그를 등록하지 않았을 때 해당 플래그를 자동 삭제할지 여부 |
 | `wand.item` | `minecraft:blaze_rod` | 도구 아이템 (CustomItems 형식) |
 | `wand.raycast-max-range` | `200` | 레이캐스트 최대 거리 |
 | `wand.particle.interval` | `2` | 파티클 표시 간격 (틱) |
@@ -101,7 +106,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("kr.rtustudio:fieldzone:1.1.1")
+    compileOnly("kr.rtustudio:fieldzone:1.2.0")
 }
 ```
 
@@ -137,8 +142,9 @@ int count = FieldZoneAPI.getRegionCount();
 // 해당 위치가 지역 내부인지 확인
 boolean inside = FieldZoneAPI.isInRegion(player.getLocation());
 
-// 해당 위치에 특정 플래그가 설정되어 있는지 확인
-boolean hasWarning = FieldZoneAPI.hasFlag(player.getLocation(), RegionFlag.WARNING);
+// 해당 위치에 특정 플래그의 상태 확인 (TRUE / FALSE / NONE)
+FlagState state = FieldZoneAPI.hasFlag(player.getLocation(), RegionFlag.WARNING);
+boolean active = state.toBoolean();  // NONE과 FALSE는 false
 ```
 
 #### 지역 정보
@@ -163,7 +169,7 @@ Point center = FieldZoneAPI.getCenter("spawn");
 | `uuid()` | `UUID` | 고유 식별자 |
 | `name()` | `String` | 지역 이름 |
 | `pos()` | `PolygonPos` | 다각형 위치 데이터 (점 목록, 월드, 면적, 둘레, 중심) |
-| `flags()` | `Set<RegionFlag>` | 설정된 플래그 목록 |
+| `flags()` | `Map<RegionFlag, Boolean>` | 설정된 플래그와 값 |
 
 ```java
 Region region = FieldZoneAPI.getRegion("spawn");
@@ -171,6 +177,161 @@ if (region != null) {
     String name = region.name();
     String world = region.pos().world();
     double area = region.pos().area();
-    boolean hasWarning = region.hasFlag(RegionFlag.WARNING);
+
+    // hasFlag()는 FlagState를 반환 (TRUE / FALSE / NONE)
+    FlagState state = region.hasFlag(RegionFlag.WARNING);
+    if (state.toBoolean()) {
+        // 경고 활성화됨
+    }
 }
 ```
+
+---
+
+### 커스텀 플래그 시스템
+
+FieldZone은 외부 플러그인이 자체 플래그를 등록하고 활용할 수 있는 확장 가능한 플래그 시스템을 제공합니다.
+WorldGuard처럼, 외부 플러그인은 자신만의 네임스페이스를 가진 플래그를 추가할 수 있습니다.
+
+#### RegionFlag 구조
+
+`RegionFlag`는 `namespace`(소유자)와 `key`(이름)로 구성된 레코드입니다:
+
+```java
+// FieldZone 내장 플래그
+RegionFlag.WARNING           // → "fieldzone:warning"
+
+// 커스텀 플래그 생성 (RegionFlag.create 사용 권장)
+RegionFlag.create(this, "no_lightning")  // → "myplugin:no_lightning"
+RegionFlag.create(this, "safe_zone")     // → "myplugin:safe_zone"
+```
+
+#### FlagState (3-상태)
+
+`hasFlag()`는 `boolean`이 아닌 `FlagState` enum을 반환합니다:
+
+| 상태 | 의미 | `toBoolean()` |
+|---|---|---|
+| `TRUE` | 플래그가 명시적으로 `true`로 설정됨 | `true` |
+| `FALSE` | 플래그가 명시적으로 `false`로 설정됨 | `false` |
+| `NONE` | 플래그가 설정되지 않음 (데이터에 저장되지 않음) | `false` |
+
+#### 플래그 등록 및 해제
+
+```java
+// onEnable()에서 등록
+RegionFlag myFlag = RegionFlag.create(this, "no_lightning");
+FieldZoneAPI.registerFlag(myFlag);
+
+// onDisable()에서 해제
+FieldZoneAPI.unregisterFlag(myFlag);
+```
+
+등록된 플래그는 자동으로 `/fieldzone flag set` 명령어의 탭 자동완성에 나타납니다.
+
+#### 플래그 활용
+
+```java
+// 특정 위치에 해당 플래그가 설정되어 있는지 확인
+FlagState state = FieldZoneAPI.hasFlag(location, myFlag);
+if (state.toBoolean()) {
+    // 플래그가 true로 설정된 지역 내부
+}
+
+// 3-상태를 활용한 세밀한 제어
+FlagState state = FieldZoneAPI.hasFlag(location, myFlag);
+switch (state) {
+    case TRUE  -> // 명시적으로 활성화됨
+    case FALSE -> // 명시적으로 비활성화됨
+    case NONE  -> // 설정 없음, 기본 동작 적용
+}
+```
+
+#### 미등록 플래그 보존 정책
+
+`clean-unregistered-flags` 설정에 따라 미등록 플래그의 처리 방식이 달라집니다:
+
+| 상황 | `false` (기본) | `true` |
+|---|---|---|
+| 소유자 플러그인 미로드 | 보존 ✅ | 보존 ✅ |
+| 소유자 플러그인 로드됨 + 플래그 미등록 | 보존 ✅ | **삭제** 🗑️ |
+| 소유자 플러그인 로드됨 + 플래그 등록됨 | 정상 사용 | 정상 사용 |
+
+이는 플러그인 업데이트로 플래그가 제거된 경우를 감지하기 위한 것입니다.
+소유자 플러그인이 활성 상태임에도 해당 플래그를 등록하지 않았다면, 더 이상 사용하지 않는 것으로 판단하고 정리합니다.
+
+---
+
+### 활용 예시: 번개 방지 플래그
+
+다음은 번개를 발생시키는 플러그인이 FieldZone의 플래그 시스템을 활용하여
+특정 지역에서 번개를 차단하는 완전한 예시입니다:
+
+```java
+package kr.example.lightning;
+
+import kr.rtustudio.fieldzone.FieldZoneAPI;
+import kr.rtustudio.fieldzone.region.FlagState;
+import kr.rtustudio.fieldzone.region.RegionFlag;
+import org.bukkit.Location;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.weather.LightningStrikeEvent;
+import org.bukkit.plugin.java.JavaPlugin;
+
+/**
+ * 번개 플러그인 예시.
+ * FieldZone에 'no_lightning' 플래그를 등록하고,
+ * 해당 플래그가 true로 설정된 지역에서는 번개를 차단합니다.
+ */
+public class LightningPlugin extends JavaPlugin implements Listener {
+
+    // 플래그를 필드로 선언
+    private RegionFlag noLightning;
+
+    @Override
+    public void onEnable() {
+        // RegionFlag.create(this, key) — 플러그인 이름이 자동으로 namespace가 됨
+        noLightning = RegionFlag.create(this, "no_lightning");
+
+        // FieldZone 레지스트리에 커스텀 플래그 등록
+        // → /fz flag set <지역> LightningPlugin:no_lightning 으로 사용 가능
+        // → /fz flag set <지역> LightningPlugin:no_lightning false 로 명시적 비활성화도 가능
+        FieldZoneAPI.registerFlag(noLightning);
+
+        getServer().getPluginManager().registerEvents(this, this);
+        getLogger().info("LightningPlugin enabled — registered 'lightning:no_lightning' flag");
+    }
+
+    @Override
+    public void onDisable() {
+        // 플러그인 종료 시 플래그 해제
+        FieldZoneAPI.unregisterFlag(noLightning);
+    }
+
+    @EventHandler
+    private void onLightningStrike(LightningStrikeEvent event) {
+        Location location = event.getLightning().getLocation();
+
+        // FlagState를 통한 3-상태 확인
+        FlagState state = FieldZoneAPI.hasFlag(location, noLightning);
+
+        // toBoolean()으로 간단히 확인 (TRUE만 true, FALSE와 NONE은 false)
+        if (state.toBoolean()) {
+            event.setCancelled(true);
+        }
+    }
+}
+```
+
+**사용 흐름:**
+
+1. 서버에 FieldZone과 LightningPlugin이 함께 설치되어 있습니다.
+2. LightningPlugin이 활성화되면 `lightning:no_lightning` 플래그가 자동 등록됩니다.
+3. 관리자가 `/fz flag set spawn LightningPlugin:no_lightning` 명령어를 실행합니다 → **TRUE** 설정.
+4. 이제 `spawn` 지역에서는 번개가 차단됩니다.
+5. `/fz flag set spawn LightningPlugin:no_lightning false` → 명시적으로 **FALSE** 설정 (차단 해제).
+6. `/fz flag clear spawn LightningPlugin:no_lightning` → **NONE** 상태로 복귀 (데이터에서 삭제).
+7. LightningPlugin을 제거하면:
+   - `clean-unregistered-flags: false` → 플래그 데이터가 보존되어, 다시 설치하면 바로 작동합니다.
+   - `clean-unregistered-flags: true` → 소유자 플러그인이 없으므로 데이터가 보존됩니다. (소유자가 로드되었는데 등록을 안 했을 때만 삭제)

@@ -142,7 +142,7 @@ public class RegionWarning extends RSListener<FieldZone> {
                                              LongOpenHashSet hashes, Long2ObjectOpenHashMap<Vec3> locations) {
         for (Region region : regionManager.getRegions()) {
             if (!region.pos().world().equals(worldName)) continue;
-            if (!region.hasFlag(RegionFlag.WARNING)) continue;
+            if (!region.hasFlag(RegionFlag.WARNING).toBoolean()) continue;
             // BBox 빠른 배제 / Fast BBox rejection
             double bboxDist = region.pos().getBoundingBox().distanceSquared(playerX, playerZ);
             if (bboxDist > dist2Limit + 100) continue;

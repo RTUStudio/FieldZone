@@ -40,14 +40,14 @@ fieldzone:
       description: "Manage region flags"
       usage: "/region flag"
       commands:
-        add:
-          name: "add"
-          description: "Add a flag to a region"
-          usage: "/region flag add <region> <flag>"
-        remove:
-          name: "remove"
-          description: "Remove a flag from a region"
-          usage: "/region flag remove <region> <flag>"
+        set:
+          name: "set"
+          description: "Set a flag value on a region"
+          usage: "/region flag set <region> <flag> [true|false]"
+        clear:
+          name: "clear"
+          description: "Clear a flag from a region"
+          usage: "/region flag clear <region> <flag>"
         list:
           name: "list"
           description: "List flags of a region"

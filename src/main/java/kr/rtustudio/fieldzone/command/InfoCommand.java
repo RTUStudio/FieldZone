@@ -3,7 +3,6 @@ package kr.rtustudio.fieldzone.command;
 import kr.rtustudio.fieldzone.FieldZone;
 import kr.rtustudio.fieldzone.manager.RegionManager;
 import kr.rtustudio.fieldzone.region.Region;
-import kr.rtustudio.fieldzone.region.RegionFlag;
 import kr.rtustudio.framework.bukkit.api.command.CommandArgs;
 import kr.rtustudio.framework.bukkit.api.command.RSCommand;
 import org.bukkit.entity.Player;
@@ -33,11 +32,9 @@ public class InfoCommand extends RSCommand<FieldZone> {
                 return Result.FAILURE;
             }
 
-            // 플래그 정보 표시
             if (!region.flags().isEmpty()) {
-                String flagsStr = region.flags().stream()
-                        .map(RegionFlag::getKey)
-                        .map(key -> message.get(player, "region.flag." + key))
+                String flagsStr = region.flags().entrySet().stream()
+                        .map(entry -> entry.getKey().getKey() + "=" + entry.getValue())
                         .reduce((a, b) -> a + ", " + b)
                         .orElse("");
                 notifier.announce(message.get(player, "region.info.flags").replace("{flags}", flagsStr));
@@ -57,5 +54,4 @@ public class InfoCommand extends RSCommand<FieldZone> {
         }
         return List.of();
     }
-
 }

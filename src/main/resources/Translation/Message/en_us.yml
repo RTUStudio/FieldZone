@@ -36,13 +36,15 @@ region:
     center: " <gray>▪</gray> <white>Center:</white> <white>({x}, {z})</white>"
     flags: " <gray>▪</gray> <white>Flags:</white> <white>{flags}</white>"
   flag:
-    add: "<green>Added flag '<white>{flag}</white>' to region '<white>{region}</white>'.</green>"
-    remove: "<white>Removed flag '<white>{flag}</white>' from region '<white>{region}</white>'.</white>"
-    unknown: "<red>Unknown flag: {flag}</red>"
+    set: "<green>Set flag '<white>{flag}</white>' to <white>{value}</white> on region '<white>{region}</white>'.</green>"
+    clear: "<white>Cleared flag '<white>{flag}</white>' from region '<white>{region}</white>'.</white>"
+    already-set: "<yellow>Flag '<white>{flag}</white>' is already set to <white>{value}</white>.</yellow>"
+    not-set: "<yellow>Flag is not set on this region.</yellow>"
+    invalid: "<red>Unknown flag: {flag}</red>"
     list:
       empty: "<white>No flags set for region '<white>{region}</white>'.</white>"
       header: "<gradient:#FFD700:#FFA500>===== Region Flags: <white>{region}</white> =====</gradient>"
-      item: " <gray>▪</gray> <white>{name}</white> <gray>({key})</gray>"
+      item: " <gray>▪</gray> <white>{flag}</white> <gray>=</gray> <white>{value}</white>"
 particle:
   toggle: "<white>Particle display: {status}</white>"
   on: "<green>On</green>"

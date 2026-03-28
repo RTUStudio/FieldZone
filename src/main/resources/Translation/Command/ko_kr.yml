@@ -40,14 +40,14 @@ fieldzone:
       description: "지역 플래그를 관리합니다"
       usage: "/지역 플래그"
       commands:
-        add:
-          name: "추가"
-          description: "지역에 플래그를 추가합니다"
-          usage: "/지역 플래그 추가 <지역> <플래그>"
-        remove:
-          name: "제거"
-          description: "지역에서 플래그를 제거합니다"
-          usage: "/지역 플래그 제거 <지역> <플래그>"
+        set:
+          name: "설정"
+          description: "지역에 플래그 값을 설정합니다"
+          usage: "/지역 플래그 설정 <지역> <플래그> [true|false]"
+        clear:
+          name: "해제"
+          description: "지역에서 플래그를 해제합니다"
+          usage: "/지역 플래그 해제 <지역> <플래그>"
         list:
           name: "목록"
           description: "지역의 플래그 목록을 확인합니다"
