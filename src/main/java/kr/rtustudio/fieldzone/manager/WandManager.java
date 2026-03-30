@@ -19,6 +19,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+
 import java.util.*;
 
 public class WandManager {
@@ -27,7 +31,7 @@ public class WandManager {
     private final Notifier chat;
     private final MessageTranslation message;
     private final GlobalConfig config;
-    private final Map<UUID, PlayerWandState> states = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
+    private final Map<UUID, PlayerWandState> states = new Object2ObjectOpenHashMap<>();
 
     public WandManager(FieldZone plugin) {
         this.plugin = plugin;
@@ -351,9 +355,9 @@ public class WandManager {
         if (positions.size() < 2) return new Columns(Collections.emptyList(), Collections.emptyList());
 
         Set<Integer> intersectingEdges = findIntersectingEdges(positions);
-        List<Column> columns = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
-        List<Column> intersectColumns = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
-        Set<Long> used = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
+        List<Column> columns = new ObjectArrayList<>();
+        List<Column> intersectColumns = new ObjectArrayList<>();
+        Set<Long> used = new ObjectOpenHashSet<>();
 
         for (int i = 0; i < positions.size(); i++) {
             BlockPos a = positions.get(i);
@@ -389,7 +393,7 @@ public class WandManager {
     }
 
     private Set<Integer> findIntersectingEdges(List<BlockPos> positions) {
-        Set<Integer> intersecting = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
+        Set<Integer> intersecting = new ObjectOpenHashSet<>();
         if (positions.size() < 3) return intersecting;
 
         int n = positions.size();
